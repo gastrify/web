@@ -5,4 +5,3 @@ Gastrify is an open source social media platform similar to Twitter that preserv
 ## Author
 
 David Aragundy
-

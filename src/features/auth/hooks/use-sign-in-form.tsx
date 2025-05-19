@@ -9,7 +9,7 @@ import { useSignInSocialMutation } from "@/features/auth/hooks/use-sign-in-socia
 
 export const useSignInForm = () => {
   const [signInMethod, setSignInMethod] = useState<"credentials" | "magicLink">(
-    "credentials"
+    "credentials",
   );
 
   const { mutate, isPending } = useSignInSocialMutation();
@@ -20,7 +20,7 @@ export const useSignInForm = () => {
 
   const toggleSignInMethod = () =>
     setSignInMethod(
-      signInMethod === "credentials" ? "magicLink" : "credentials"
+      signInMethod === "credentials" ? "magicLink" : "credentials",
     );
 
   const form =
@@ -47,4 +47,3 @@ export const useSignInForm = () => {
     handleSignInWithGoogle,
   };
 };
-

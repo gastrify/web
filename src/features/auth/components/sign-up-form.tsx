@@ -108,7 +108,7 @@ export function SignUpForm({
                             fieldState.invalid && "text-destructive-foreground",
                             fieldState.isDirty &&
                               !fieldState.invalid &&
-                              "text-foreground"
+                              "text-foreground",
                           )}
                         >
                           <User2Icon size={16} aria-hidden="true" />
@@ -144,7 +144,7 @@ export function SignUpForm({
                             fieldState.invalid && "text-destructive-foreground",
                             fieldState.isDirty &&
                               !fieldState.invalid &&
-                              "text-foreground"
+                              "text-foreground",
                           )}
                         >
                           <AtSignIcon size={16} aria-hidden="true" />
@@ -184,7 +184,7 @@ export function SignUpForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground"
+                            "text-foreground",
                         )}
                       >
                         <MailIcon size={16} aria-hidden="true" />
@@ -221,7 +221,7 @@ export function SignUpForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground"
+                            "text-foreground",
                         )}
                       >
                         <LockIcon size={16} aria-hidden="true" />
@@ -258,4 +258,3 @@ export function SignUpForm({
     </div>
   );
 }
-

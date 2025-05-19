@@ -35,7 +35,7 @@ export const NavLink = ({
       className={cn(
         "w-fit flex flex-wrap items-center text-xl gap-2 aspect-square md:aspect-auto rounded-full md:rounded-xl p-2 md:px-4 md:py-2 transition-all duration-200",
         isActive ? "bg-accent" : "hover:bg-accent",
-        includeArrow && "w-full justify-between"
+        includeArrow && "w-full justify-between",
       )}
       {...props}
     >

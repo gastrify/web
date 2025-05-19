@@ -7,7 +7,8 @@
     "dev:email": "email dev --dir src/shared/lib/react-email",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -64,9 +65,16 @@
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.26.0",
     "eslint-config-next": "^15.3.2",
+    "eslint-config-prettier": "^10.1.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0",
+    "prettier": "3.5.3",
     "react-email": "^4.0.13",
     "tailwindcss": "^4.1.6",
     "tsx": "^4.19.4",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   }
 }

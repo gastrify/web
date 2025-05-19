@@ -31,7 +31,7 @@ export const useCredentialsMutation = ({ form }: Props) => {
 
             return router.push("/home");
           },
-        }
+        },
       );
 
       if (error) return Promise.reject(error);

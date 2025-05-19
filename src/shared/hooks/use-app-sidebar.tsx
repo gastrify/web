@@ -57,7 +57,7 @@ export const useAppSidebar = () => {
         icon: <SettingsIcon />,
       },
     ],
-    [session?.user.username]
+    [session?.user.username],
   );
 
   return {

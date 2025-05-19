@@ -69,4 +69,3 @@ VerifyEmail.PreviewProps = {
 } as Props;
 
 export default VerifyEmail;
-

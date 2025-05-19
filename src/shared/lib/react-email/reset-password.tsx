@@ -70,4 +70,3 @@ ResetPassword.PreviewProps = {
 } as Props;
 
 export default ResetPassword;
-

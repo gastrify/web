@@ -31,7 +31,7 @@ export const useNavUser = () => {
 
       router.push("/sign-in");
     },
-    [isSigningOut, router]
+    [isSigningOut, router],
   );
 
   const handleThemeChange = useCallback(
@@ -44,7 +44,7 @@ export const useNavUser = () => {
         setTheme("dark");
       }
     },
-    [setTheme, theme]
+    [setTheme, theme],
   );
 
   useEffect(() => {

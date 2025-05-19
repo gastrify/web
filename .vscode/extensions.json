@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "meganrogge.template-string-converter",
+    "gruntfuggly.todo-tree",
+    "eamodio.gitlens",
+    "shyykoserhiy.git-autoconfig",
+    "dbaeumer.vscode-eslint",
+    "streetsidesoftware.code-spell-checker",
+    "formulahendry.auto-rename-tag",
+    "formulahendry.auto-complete-tag",
+    "formulahendry.auto-close-tag"
+  ]
+}

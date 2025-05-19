@@ -67,4 +67,3 @@ export const post = pgTable("post", {
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
-

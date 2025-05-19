@@ -55,4 +55,3 @@ export const useGenerateBackupCodesMutation = ({ form }: Props) => {
     },
   });
 };
-

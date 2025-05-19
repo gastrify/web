@@ -76,7 +76,7 @@ export function ForgotPasswordForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground"
+                            "text-foreground",
                         )}
                       >
                         <MailIcon size={16} aria-hidden="true" />

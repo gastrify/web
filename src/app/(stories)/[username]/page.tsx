@@ -32,7 +32,7 @@ export default async function ProfilePage({
 
   if (error)
     throw new Error(
-      "Something went wrong while fetching the user data or the user does not exist"
+      "Something went wrong while fetching the user data or the user does not exist",
     );
 
   return (
@@ -72,4 +72,3 @@ export default async function ProfilePage({
     </main>
   );
 }
-

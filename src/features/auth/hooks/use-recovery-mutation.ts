@@ -35,7 +35,7 @@ export const useRecoveryMutation = ({ form }: Props) => {
             label: "Go to settings",
             onClick: () => router.push("/settings/security"),
           },
-        }
+        },
       );
 
       router.push("/home");

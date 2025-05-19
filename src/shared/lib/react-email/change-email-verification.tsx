@@ -69,4 +69,3 @@ ChangeEmailVerification.PreviewProps = {
 } as Props;
 
 export default ChangeEmailVerification;
-

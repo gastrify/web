@@ -76,7 +76,7 @@ export function ResetPasswordForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground"
+                            "text-foreground",
                         )}
                       >
                         <LockIcon size={16} aria-hidden="true" />
@@ -118,7 +118,7 @@ export function ResetPasswordForm({
                           fieldState.invalid && "text-destructive-foreground",
                           fieldState.isDirty &&
                             !fieldState.invalid &&
-                            "text-foreground"
+                            "text-foreground",
                         )}
                       >
                         <LockIcon size={16} aria-hidden="true" />

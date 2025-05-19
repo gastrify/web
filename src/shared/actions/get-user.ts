@@ -28,7 +28,7 @@ export const getUser = async ({
       .select()
       .from(user)
       .where(or(eq(user.id, id ?? ""), eq(user.username, username ?? "")))
-      .limit(1)
+      .limit(1),
   );
 
   if (error)

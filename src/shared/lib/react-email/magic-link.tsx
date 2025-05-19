@@ -66,4 +66,3 @@ MagicLink.PreviewProps = {
 } as Props;
 
 export default MagicLink;
-

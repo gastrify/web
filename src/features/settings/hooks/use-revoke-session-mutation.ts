@@ -32,7 +32,7 @@ export const useRevokeSessionMutation = () => {
       queryClient.setQueryData(
         [SESSIONS_QUERY_KEY],
         (old: Session["session"][]) =>
-          old.filter((session) => session.token !== token)
+          old.filter((session) => session.token !== token),
       );
 
       // Return a context object with the snapshotted value

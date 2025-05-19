@@ -10,7 +10,7 @@
     "qrcode",
     "sonner",
     "Totp",
-    "turbopack"
+    "turbopack",
+    "vaul"
   ]
 }
-
