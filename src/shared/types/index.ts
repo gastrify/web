@@ -15,7 +15,7 @@ export interface AuthClientError {
 }
 
 export type ActionResponse<T, E extends string> =
-  | { data: T; error?: null }
-  | { error: { code: E; message: string }; data?: null };
+  | { data: T; error: null }
+  | { error: { code: E; message: string }; data: null };
 
 export type User = typeof user.$inferSelect;
