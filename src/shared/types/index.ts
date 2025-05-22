@@ -14,11 +14,8 @@ export interface AuthClientError {
   statusText: string;
 }
 
-export type ActionResponse<T> = {
-  data?: T;
-  error?: {
-    message: string;
-  };
-};
+export type ActionResponse<T, E extends string> =
+  | { data: T; error?: undefined }
+  | { error: { code: E; message: string }; data?: undefined };
 
 export type User = typeof user.$inferSelect;
