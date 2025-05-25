@@ -7,6 +7,7 @@ import {
   magicLink,
   twoFactor,
   haveIBeenPwned,
+  admin,
 } from "better-auth/plugins";
 
 import { BASE_URL } from "@/shared/constants";
@@ -73,6 +74,12 @@ export const auth = betterAuth({
     }),
     twoFactor(),
     haveIBeenPwned(),
+    admin({
+      adminUserIds: [
+        "5GqZMnypnF17INIe1TnV99rPgmWQuXsf",
+        "N2VWAzV5Gukgr808wuJOl5MDOkXygjtN",
+      ],
+    }),
   ],
   user: {
     additionalFields: {
@@ -146,15 +153,15 @@ export const auth = betterAuth({
     },
   },
   socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      mapProfileToUser: (profile) => {
-        return {
-          username: profile.email.split("@")[0],
-          displayUsername: profile.email.split("@")[0],
-        };
-      },
-    },
+    // google: {
+    //   clientId: process.env.GOOGLE_CLIENT_ID as string,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    //   mapProfileToUser: (profile) => {
+    //     return {
+    //       username: profile.email.split("@")[0],
+    //       displayUsername: profile.email.split("@")[0],
+    //     };
+    //   },
+    // },
   },
 });

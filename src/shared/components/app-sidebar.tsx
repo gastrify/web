@@ -23,7 +23,7 @@ export const AppSidebar = () => {
   return (
     <div className="flex flex-col items-center md:items-stretch gap-4">
       <TypographyLarge className="font-extrabold text-4xl">
-        S<span className="hidden md:inline">tories</span>
+        G<span className="hidden md:inline">astrify</span>
       </TypographyLarge>
 
       <nav className="flex flex-col items-start md:items-stretch gap-2">
