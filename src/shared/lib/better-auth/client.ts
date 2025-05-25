@@ -4,6 +4,7 @@ import {
   magicLinkClient,
   twoFactorClient,
   inferAdditionalFields,
+  adminClient,
 } from "better-auth/client/plugins";
 import { toast } from "sonner";
 
@@ -14,6 +15,7 @@ export const authClient = createAuthClient({
     usernameClient(),
     magicLinkClient(),
     twoFactorClient(),
+    adminClient(),
     inferAdditionalFields<typeof auth>(),
   ],
   fetchOptions: {

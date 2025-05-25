@@ -1,7 +1,20 @@
 # Gastrify
 
-Gastrify is an open source social media platform similar to Twitter that preserves all content generated on the platform (posts, comments and chats) for only 24 hours.
+## Setup
 
-## Author
+1. Clone the repository
+2. Copy the `.env.example` file to `.env.local` and set the environment variables
 
-David Aragundy
+```bash
+cp .env.example .env.local
+```
+
+3. Install the dependencies
+
+```bash
+npm install
+```
+
+```bash
+npm dev
+```

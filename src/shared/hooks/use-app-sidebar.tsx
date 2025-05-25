@@ -1,13 +1,10 @@
 import { useMemo } from "react";
 import {
   HomeIcon,
-  UserRoundCheckIcon,
-  VenetianMaskIcon,
-  SearchIcon,
-  BellIcon,
-  MessageCircleIcon,
   UserRoundIcon,
   SettingsIcon,
+  CalendarIcon,
+  BellIcon,
 } from "lucide-react";
 
 import { useSession } from "@/shared/hooks/use-session";
@@ -26,26 +23,15 @@ export const useAppSidebar = () => {
     () => [
       { href: "/home", label: "Home", icon: <HomeIcon /> },
       {
-        href: "/close-friends",
-        label: "Close Friends",
-        icon: <UserRoundCheckIcon />,
-      },
-      {
-        href: "/ghosts",
-        label: "Ghosts",
-        icon: <VenetianMaskIcon />,
-      },
-      {
-        href: "/explore",
-        label: "Explore",
-        icon: <SearchIcon />,
+        href: "/appointments",
+        label: "Appointments",
+        icon: <CalendarIcon />,
       },
       {
         href: "/notifications",
         label: "Notifications",
         icon: <BellIcon />,
       },
-      { href: "/chat", label: "Chat", icon: <MessageCircleIcon /> },
       {
         href: `/${session?.user.username}`,
         label: "Profile",
