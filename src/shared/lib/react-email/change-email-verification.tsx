@@ -22,7 +22,7 @@ export const ChangeEmailVerification = ({ url, name, newEmail }: Props) => {
   return (
     <Html>
       <Head />
-      <Preview>bitch, we gotta be sure its really you 🧐</Preview>
+      <Preview>Please verify your new email address</Preview>
       <Tailwind>
         <Body className="bg-white my-auto mx-auto font-sans px-2">
           <Container className="border border-solid border-[#eaeaea] rounded-2xl my-[40px] mx-auto p-[20px] max-w-[465px]">

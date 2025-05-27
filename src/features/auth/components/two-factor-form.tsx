@@ -40,7 +40,7 @@ export function TwoFactorForm({
       <Card className="border-none bg-background shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>2FA 💂</TypographyH1>
+            <TypographyH1>Two-factor authentication</TypographyH1>
           </CardTitle>
 
           <CardDescription>
