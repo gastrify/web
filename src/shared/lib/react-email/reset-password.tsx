@@ -21,9 +21,7 @@ export const ResetPassword = ({ url, name }: Props) => {
   return (
     <Html>
       <Head />
-      <Preview>
-        you better remember your password this time, you fool 😤
-      </Preview>
+      <Preview>Reset your password to regain access to your account</Preview>
       <Tailwind>
         <Body className="bg-white my-auto mx-auto font-sans px-2">
           <Container className="border border-solid border-[#eaeaea] rounded-2xl my-[40px] mx-auto p-[20px] max-w-[465px]">

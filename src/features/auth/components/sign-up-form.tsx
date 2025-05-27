@@ -49,7 +49,7 @@ export function SignUpForm({
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Here you can say whatever you want, nobody will give a f*ck. 🌴
+              Create your account to get started with Gastrify😊.
             </TypographyP>
           </CardDescription>
         </CardHeader>

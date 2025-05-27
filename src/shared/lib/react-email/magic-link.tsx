@@ -20,7 +20,7 @@ export const MagicLink = ({ url }: Props) => {
   return (
     <Html>
       <Head />
-      <Preview>your magic link is here 🫦</Preview>
+      <Preview>Please verify your email address</Preview>
       <Tailwind>
         <Body className="bg-white my-auto mx-auto font-sans px-2">
           <Container className="border border-solid border-[#eaeaea] rounded-2xl my-[40px] mx-auto p-[20px] max-w-[465px]">

@@ -42,7 +42,8 @@ export function ResetPasswordForm({
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              You better remember it this time! 🫵
+              Please enter your new password to regain access to your account
+              🔐.
             </TypographyP>
           </CardDescription>
         </CardHeader>
