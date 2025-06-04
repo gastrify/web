@@ -143,12 +143,6 @@ export function EventCalendar({
     setCurrentDate(new Date());
   };
 
-  const handleEventSelect = (event: CalendarEvent) => {
-    console.log("Event selected:", event); // Debug log
-    setSelectedEvent(event);
-    setIsEventDialogOpen(true);
-  };
-
   const handleEventCreate = (startTime: Date) => {
     if (!isAdmin) {
       toast.error("Cannot book outside of available time slots");

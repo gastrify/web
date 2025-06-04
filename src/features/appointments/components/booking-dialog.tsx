@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { format } from "date-fns";
 
 import type { CalendarEvent } from "@/features/appointments/types";
@@ -13,9 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { Textarea } from "@/shared/components/ui/textarea";
 import { useSession } from "@/shared/hooks/use-session";
 import { toast } from "sonner";
 
@@ -33,8 +30,6 @@ export function BookingDialog({
   onBook,
 }: BookingDialogProps) {
   const { data: session } = useSession();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
 
   if (!event) return null;
 
@@ -51,6 +46,8 @@ export function BookingDialog({
 
     onBook(updatedEvent);
     onClose();
+
+    toast.success("Appointment booked successfully");
   };
 
   return (
