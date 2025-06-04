@@ -53,6 +53,7 @@ export interface EventCalendarProps {
   onEventAdd?: (event: CalendarEvent) => void;
   onEventUpdate?: (event: CalendarEvent) => void;
   onEventDelete?: (eventId: string) => void;
+  onEventSelect: (event: CalendarEvent) => void;
   className?: string;
   initialView?: CalendarView;
 }
@@ -62,6 +63,7 @@ export function EventCalendar({
   onEventAdd,
   onEventUpdate,
   onEventDelete,
+  onEventSelect,
   className,
   initialView = "month",
 }: EventCalendarProps) {
@@ -148,6 +150,10 @@ export function EventCalendar({
   };
 
   const handleEventCreate = (startTime: Date) => {
+    if (!isAdmin) {
+      toast.error("Cannot book outside of available time slots");
+      return;
+    }
     // Snap to 15-minute intervals
     const minutes = startTime.getMinutes();
     const remainder = minutes % 15;
@@ -377,20 +383,22 @@ export function EventCalendar({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              className="aspect-square max-[479px]:p-0!"
-              onClick={() => {
-                setSelectedEvent(null); // Ensure we're creating a new event
-                setIsEventDialogOpen(true);
-              }}
-            >
-              <PlusIcon
-                className="opacity-60 sm:-ms-1"
-                size={16}
-                aria-hidden="true"
-              />
-              <span className="max-sm:sr-only">New event</span>
-            </Button>
+            {isAdmin && (
+              <Button
+                className="aspect-square max-[479px]:p-0!"
+                onClick={() => {
+                  setSelectedEvent(null); // Ensure we're creating a new event
+                  setIsEventDialogOpen(true);
+                }}
+              >
+                <PlusIcon
+                  className="opacity-60 sm:-ms-1"
+                  size={16}
+                  aria-hidden="true"
+                />
+                <span className="max-sm:sr-only">New event</span>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -399,7 +407,7 @@ export function EventCalendar({
             <MonthView
               currentDate={currentDate}
               events={events}
-              onEventSelect={handleEventSelect}
+              onEventSelect={onEventSelect || (() => {})}
               onEventCreate={handleEventCreate}
             />
           )}
@@ -407,7 +415,7 @@ export function EventCalendar({
             <WeekView
               currentDate={currentDate}
               events={events}
-              onEventSelect={handleEventSelect}
+              onEventSelect={onEventSelect || (() => {})}
               onEventCreate={handleEventCreate}
             />
           )}
@@ -415,7 +423,7 @@ export function EventCalendar({
             <DayView
               currentDate={currentDate}
               events={events}
-              onEventSelect={handleEventSelect}
+              onEventSelect={onEventSelect || (() => {})}
               onEventCreate={handleEventCreate}
             />
           )}
@@ -423,7 +431,7 @@ export function EventCalendar({
             <AgendaView
               currentDate={currentDate}
               events={events}
-              onEventSelect={handleEventSelect}
+              onEventSelect={onEventSelect || (() => {})}
             />
           )}
         </div>

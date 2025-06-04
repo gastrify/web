@@ -13,7 +13,7 @@ export interface CalendarEvent {
   userId: string;
   doctorId: string;
   meetingLink?: string;
-  status: "available" | "booked" | "cancelled";
+  status: "available" | "booked";
 }
 
 export type EventColor =
