@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/shared/lib/drizzle/server";
-import { appointment, user } from "@/shared/lib/drizzle/schema";
+import { appointment } from "@/shared/lib/drizzle/schema";
 import { ActionResponse, Appointment } from "@/shared/types";
 import { auth } from "@/shared/lib/better-auth/server";
 import { eq } from "drizzle-orm";

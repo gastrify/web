@@ -7,7 +7,7 @@ import { ActionResponse, User } from "@/shared/types";
 import { auth } from "@/shared/lib/better-auth/server";
 import { checkIsAdmin } from "@/shared/utils/check-role";
 import { Appointment } from "./helpers/appointment";
-import { and, eq, gt, gte, lt, lte, or } from "drizzle-orm";
+import { and, gt, gte, lt, lte, or } from "drizzle-orm";
 import { headers } from "next/headers";
 
 type ErrorCode =

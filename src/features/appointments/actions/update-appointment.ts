@@ -177,6 +177,7 @@ export async function updateAppointment(
 
     return { data: { id }, error: null };
   } catch (error) {
+    console.error("Error al listar citas:", error);
     return {
       error: { code: "SERVER_ERROR", message: "Error interno del servidor" },
       data: null,

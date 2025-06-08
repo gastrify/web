@@ -6,17 +6,17 @@ import { useFormStatus } from "react-dom";
 import {
   createAppointment,
   getAppointments,
-  getAppointmentById,
   deleteAppointment,
   updateAppointment,
 } from "../actions";
+import { Appointment } from "@/shared/types";
 
 export const TestCalendar = () => {
   const isAdmin = useIsAdmin();
   const [message, setMessage] = useState<string | null>(null);
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<any>({});
+  const [editForm, setEditForm] = useState<Partial<Appointment>>({});
 
   useEffect(() => {
     fetchAppointments();
@@ -59,11 +59,11 @@ export const TestCalendar = () => {
 
   const handleEditSubmit = async (id: string) => {
     const formData = new FormData();
-    formData.append("user_id", editForm.user_id);
-    formData.append("start_time", editForm.start_time);
-    formData.append("end_time", editForm.end_time);
-    formData.append("type", editForm.type);
-    formData.append("link", editForm.link || "");
+    formData.append("user_id", editForm.user_id ?? "");
+    formData.append("start_time", String(editForm.start_time ?? ""));
+    formData.append("end_time", String(editForm.end_time ?? ""));
+    formData.append("type", editForm.type ?? "");
+    formData.append("link", editForm.link ?? "");
 
     const result = await updateAppointment(id, formData);
     if (result.error) {
@@ -136,14 +136,14 @@ export const TestCalendar = () => {
                   <div className="space-y-2">
                     <input
                       name="user_id"
-                      defaultValue={appt.user_id}
+                      defaultValue={appt.user_id || ""}
                       onChange={handleEditChange}
                       className="input"
                     />
                     <input
                       name="start_time"
                       defaultValue={appt.start_time
-                        .toLocaleString()
+                        ?.toLocaleString()
                         .slice(0, 16)}
                       onChange={handleEditChange}
                       type="datetime-local"
@@ -151,14 +151,16 @@ export const TestCalendar = () => {
                     />
                     <input
                       name="end_time"
-                      defaultValue={appt.end_time.toLocaleString().slice(0, 16)}
+                      defaultValue={appt.end_time
+                        ?.toLocaleString()
+                        .slice(0, 16)}
                       onChange={handleEditChange}
                       type="datetime-local"
                       className="input"
                     />
                     <select
                       name="type"
-                      defaultValue={appt.type}
+                      defaultValue={appt.type || ""}
                       onChange={handleEditChange}
                       className="input"
                     >
@@ -196,11 +198,11 @@ export const TestCalendar = () => {
                     </div>
                     <div>
                       <strong>Inicio:</strong>{" "}
-                      {new Date(appt.start_time).toLocaleString()}
+                      {new Date(appt.start_time || "").toLocaleString()}
                     </div>
                     <div>
                       <strong>Fin:</strong>{" "}
-                      {new Date(appt.end_time).toLocaleString()}
+                      {new Date(appt.end_time || "").toLocaleString()}
                     </div>
                     <div>
                       <strong>Tipo:</strong> {appt.type}
