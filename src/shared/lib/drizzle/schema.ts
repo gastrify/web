@@ -70,3 +70,13 @@ export const twoFactor = pgTable("two_factor", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
+
+export const appointment = pgTable("appointment", {
+  id: text("id").primaryKey(),
+  user_id: text("user_id").references(() => user.id),
+  start_time: timestamp("start_time", { mode: "date" }),
+  end_time: timestamp("end_time", { mode: "date" }),
+  type: text("type").$type<"virtual" | "in-person">(),
+  link: text("link"),
+  created_at: timestamp("created_at", { mode: "date" }).defaultNow(),
+});
