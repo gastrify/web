@@ -13,7 +13,7 @@ type Props = {
 
 export const SettingsPageHeader = ({ title, description }: Props) => {
   return (
-    <div className="sticky top-0 backdrop-blur-sm pb-2 md:static md:backdrop-blur-none md:pb-0">
+    <div className="sticky top-0 pb-2 backdrop-blur-sm md:static md:pb-0 md:backdrop-blur-none">
       <TypographyH3 className="flex items-center gap-2">
         <Link href="/settings" className="md:hidden">
           <ArrowLeftIcon />

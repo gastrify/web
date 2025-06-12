@@ -33,14 +33,14 @@ export const ActiveSessionCard = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex justify-between items-center gap-2">
+        <CardTitle className="flex items-center justify-between gap-2">
           User Agent {isCurrentSession && <Badge>Current</Badge>}
         </CardTitle>
 
         <CardDescription>{session.userAgent}</CardDescription>
       </CardHeader>
 
-      <CardContent className="text-sm flex flex-col gap-0">
+      <CardContent className="flex flex-col gap-0 text-sm">
         <div className="flex items-center gap-2">
           <TypographyP>IP Address:</TypographyP>
           <TypographyMuted>{session.ipAddress}</TypographyMuted>

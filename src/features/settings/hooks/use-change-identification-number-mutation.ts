@@ -7,43 +7,51 @@ import { authClient } from "@/shared/lib/better-auth/client";
 import { SESSION_QUERY_KEY } from "@/shared/lib/react-query/query-key-factory";
 import type { AuthClientError } from "@/shared/types";
 
-import type { ChangeUsernameFormValues } from "@/features/settings/types";
+import type { ChangeIdentificationNumberFormValues } from "@/features/settings/types";
 
 interface Props {
-  form: UseFormReturn<ChangeUsernameFormValues>;
+  form: UseFormReturn<ChangeIdentificationNumberFormValues>;
 }
 
-export const useChangeUsernameMutation = ({ form }: Props) => {
+export const useChangeIdentificationNumberMutation = ({ form }: Props) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ username }: { username: string }) => {
+    mutationFn: async ({
+      identificationNumber,
+    }: {
+      identificationNumber: string;
+    }) => {
       const { error } = await authClient.updateUser({
-        username,
-        displayUsername: username,
+        identificationNumber,
       });
 
       if (error) return Promise.reject(error);
     },
     onSuccess: (_data, values) => {
-      toast.success("Username updated successfully 🎉", {
+      toast.success("Identification number updated successfully 🎉", {
         duration: 10_000,
       });
 
-      form.reset({ username: values.username });
+      form.reset({ identificationNumber: values.identificationNumber });
     },
     onError: (error: AuthClientError) => {
       if (error.status === RATE_LIMIT_ERROR_CODE) return;
 
-      switch (error.code) {
-        case "USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER":
-          form.setError("username", {
-            message: "Username is already taken. Please try another.",
-          });
-          return;
+      if (
+        (error as unknown as { details: { cause: { constraint: string } } })
+          .details.cause.constraint === "user_identification_number_unique"
+      ) {
+        form.setError("identificationNumber", {
+          message:
+            "Identification number is already taken. Please try another.",
+        });
+        return;
+      }
 
+      switch (error.code) {
         default:
-          toast.error("Failed to change username 😢", {
+          toast.error("Failed to change identification number 😢", {
             description: "Please try again later",
             duration: 10_000,
           });

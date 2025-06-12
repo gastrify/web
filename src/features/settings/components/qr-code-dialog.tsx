@@ -70,7 +70,6 @@ export const QRCodeDialog = ({
       <DialogTrigger hidden ref={dialogTriggerRef} />
       <DialogClose hidden ref={dialogCloseRef} />
       <DialogContent
-        showCloseBtn={showBackupCodes}
         onEscapeKeyDown={(event) => event.preventDefault()}
         onInteractOutside={(event) => event.preventDefault()}
         className="flex flex-col gap-8"
@@ -124,7 +123,7 @@ export const QRCodeDialog = ({
                       app.
                     </FormDescription>
                     <FormControl>
-                      <div className="flex gap-4 items-center">
+                      <div className="flex items-center gap-4">
                         <InputOTP
                           pattern={REGEXP_ONLY_DIGITS}
                           maxLength={6}

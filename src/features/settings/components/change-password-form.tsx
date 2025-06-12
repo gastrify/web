@@ -37,7 +37,7 @@ export const ChangePasswordForm = () => {
           name="newPassword"
           render={({ field, fieldState }) => (
             <FormItem>
-              <div className="flex flex-wrap gap-2 items-center justify-start">
+              <div className="flex flex-wrap items-center justify-start gap-2">
                 <FormLabel>New password</FormLabel>
 
                 <FormControl className="w-full sm:w-fit">
@@ -45,7 +45,7 @@ export const ChangePasswordForm = () => {
                 </FormControl>
               </div>
 
-              <FormDescription className="text-sm text-muted-foreground">
+              <FormDescription className="text-muted-foreground text-sm">
                 If you change your password, all your active sessions will be
                 logged out.
               </FormDescription>
@@ -65,7 +65,7 @@ export const ChangePasswordForm = () => {
             control={form.control}
             name="currentPassword"
             render={({ field }) => (
-              <FormItem className="bg-destructive/40 flex flex-col items-start rounded-lg p-4 gap-4">
+              <FormItem className="bg-destructive/40 flex flex-col items-start gap-4 rounded-lg p-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Current password</FormLabel>
 

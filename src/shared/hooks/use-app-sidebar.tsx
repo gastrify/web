@@ -33,7 +33,7 @@ export const useAppSidebar = () => {
         icon: <BellIcon />,
       },
       {
-        href: `/${session?.user.username}`,
+        href: `/${session?.user.identificationNumber}`,
         label: "Profile",
         icon: <UserRoundIcon />,
       },
@@ -43,7 +43,7 @@ export const useAppSidebar = () => {
         icon: <SettingsIcon />,
       },
     ],
-    [session?.user.username],
+    [session?.user.identificationNumber],
   );
 
   return {

@@ -11,7 +11,7 @@ export const useCredentialsForm = () => {
   const form = useForm<CredentialsFormValues>({
     resolver: zodResolver(credentialsFormSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });

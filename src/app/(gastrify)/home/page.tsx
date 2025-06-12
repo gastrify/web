@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <TypographyH1>Home</TypographyH1>
       <TypographyP>
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque,
@@ -22,6 +22,6 @@ export default function HomePage() {
         cumque voluptatem cum ipsa mollitia ratione pariatur culpa, ducimus
         possimus quasi veritatis velit aspernatur reprehenderit.
       </TypographyP>
-    </main>
+    </div>
   );
 }

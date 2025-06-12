@@ -21,37 +21,37 @@ export const VerifyEmail = ({ url, name }: Props) => {
   return (
     <Html>
       <Head />
-      <Preview>Please verify your email address</Preview>
+      <Preview>Please verify your email address 📧</Preview>
       <Tailwind>
-        <Body className="bg-white my-auto mx-auto font-sans px-2">
-          <Container className="border border-solid border-[#eaeaea] rounded-2xl my-[40px] mx-auto p-[20px] max-w-[465px]">
+        <Body className="mx-auto my-auto bg-white px-2 font-sans">
+          <Container className="mx-auto my-[40px] max-w-[465px] rounded-2xl border border-solid border-[#eaeaea] p-[20px]">
             <Section className="mt-[32px]">
               <Heading className="font-extrabold">Gastrify</Heading>
             </Section>
-            <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
+            <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
               Verify your email address
             </Heading>
-            <Text className="text-black text-[14px] leading-[24px]">
+            <Text className="text-[14px] leading-[24px] text-black">
               Hello {name},
             </Text>
-            <Text className="text-black text-[14px] leading-[24px]">
+            <Text className="text-[14px] leading-[24px] text-black">
               In order to start using your account, you need to verify your
               email address. Click the button below to verify your email address
               (this link will expire in one hour).
             </Text>
-            <Section className="text-center mt-[32px] mb-[32px]">
+            <Section className="mt-[32px] mb-[32px] text-center">
               <Button
-                className="bg-black text-white rounded-2xl text-[12px] font-semibold no-underline text-center px-5 py-3"
+                className="rounded-2xl bg-black px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
                 href={url}
               >
                 Verify Email
               </Button>
             </Section>
-            <Text className="text-black text-[14px] leading-[24px]">
+            <Text className="text-[14px] leading-[24px] text-black">
               or copy and paste this URL into your browser:{" "}
               <Link
                 href={url}
-                className="text-blue-600 no-underline text-wrap break-all"
+                className="text-wrap break-all text-blue-600 no-underline"
               >
                 {url}
               </Link>
