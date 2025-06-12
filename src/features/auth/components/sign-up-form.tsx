@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {
-  AtSignIcon,
+  IdCardIcon,
   LoaderIcon,
   LockIcon,
   MailIcon,
@@ -41,7 +41,7 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="border-none bg-background shadow-none">
+      <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
             <TypographyH1>Sign up</TypographyH1>
@@ -49,7 +49,7 @@ export function SignUpForm({
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Create your account to get started with Gastrify😊.
+              Create your account to get started 🎉
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -75,87 +75,89 @@ export function SignUpForm({
             </Button> */}
           </div>
 
-          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+          {/* <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
               Or continue with
             </span>
-          </div>
+          </div> */}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="flex items-start gap-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
+              {/* <div className="flex items-start gap-4"> */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
 
-                      <div className="relative">
-                        <FormControl>
-                          <Input
-                            className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
-                            disabled={isPending}
-                            placeholder={
-                              fieldState.invalid ? undefined : "David Aragundy"
-                            }
-                            {...field}
-                          />
-                        </FormControl>
+                    <div className="relative">
+                      <FormControl>
+                        <Input
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
+                          disabled={isPending}
+                          placeholder={
+                            fieldState.invalid
+                              ? undefined
+                              : "Walter David Aragundy Yánez"
+                          }
+                          {...field}
+                        />
+                      </FormControl>
 
-                        <div
-                          className={cn(
-                            "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
-                            fieldState.invalid && "text-destructive-foreground",
-                            fieldState.isDirty &&
-                              !fieldState.invalid &&
-                              "text-foreground",
-                          )}
-                        >
-                          <User2Icon size={16} aria-hidden="true" />
-                        </div>
+                      <div
+                        className={cn(
+                          "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
+                          fieldState.invalid && "text-destructive-foreground",
+                          fieldState.isDirty &&
+                            !fieldState.invalid &&
+                            "text-foreground",
+                        )}
+                      >
+                        <User2Icon size={16} aria-hidden="true" />
                       </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
+              <FormField
+                control={form.control}
+                name="identificationNumber"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Identification Number</FormLabel>
 
-                      <div className="relative">
-                        <FormControl>
-                          <Input
-                            className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
-                            disabled={isPending}
-                            placeholder={
-                              fieldState.invalid ? undefined : "davidaragundy"
-                            }
-                            {...field}
-                          />
-                        </FormControl>
+                    <div className="relative">
+                      <FormControl>
+                        <Input
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
+                          disabled={isPending}
+                          placeholder={
+                            fieldState.invalid ? undefined : "1234567890"
+                          }
+                          {...field}
+                        />
+                      </FormControl>
 
-                        <div
-                          className={cn(
-                            "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
-                            fieldState.invalid && "text-destructive-foreground",
-                            fieldState.isDirty &&
-                              !fieldState.invalid &&
-                              "text-foreground",
-                          )}
-                        >
-                          <AtSignIcon size={16} aria-hidden="true" />
-                        </div>
+                      <div
+                        className={cn(
+                          "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
+                          fieldState.invalid && "text-destructive-foreground",
+                          fieldState.isDirty &&
+                            !fieldState.invalid &&
+                            "text-foreground",
+                        )}
+                      >
+                        <IdCardIcon size={16} aria-hidden="true" />
                       </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* </div> */}
 
               <FormField
                 control={form.control}
@@ -167,7 +169,7 @@ export function SignUpForm({
                     <div className="relative">
                       <FormControl>
                         <Input
-                          className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           type="email"
                           disabled={isPending}
                           placeholder={
@@ -206,7 +208,7 @@ export function SignUpForm({
                     <div className="relative">
                       <FormControl>
                         <Input
-                          className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           disabled={isPending}
                           type="password"
                           placeholder={

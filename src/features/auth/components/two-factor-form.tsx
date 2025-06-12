@@ -37,10 +37,10 @@ export function TwoFactorForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="border-none bg-background shadow-none">
+      <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Two-factor authentication</TypographyH1>
+            <TypographyH1>Two-factor authentication 💂</TypographyH1>
           </CardTitle>
 
           <CardDescription>
@@ -67,27 +67,27 @@ export function TwoFactorForm({
                       >
                         <InputOTPGroup className="gap-2">
                           <InputOTPSlot
-                            className="size-[3em] text-lg !rounded-lg"
+                            className="size-[3em] !rounded-lg text-lg"
                             index={0}
                           />
                           <InputOTPSlot
-                            className="size-[3em] text-lg !rounded-lg"
+                            className="size-[3em] !rounded-lg text-lg"
                             index={1}
                           />
                           <InputOTPSlot
-                            className="size-[3em] text-lg !rounded-lg"
+                            className="size-[3em] !rounded-lg text-lg"
                             index={2}
                           />
                           <InputOTPSlot
-                            className="size-[3em] text-lg !rounded-lg"
+                            className="size-[3em] !rounded-lg text-lg"
                             index={3}
                           />
                           <InputOTPSlot
-                            className="size-[3em] text-lg !rounded-lg"
+                            className="size-[3em] !rounded-lg text-lg"
                             index={4}
                           />
                           <InputOTPSlot
-                            className="size-[3em] text-lg !rounded-lg"
+                            className="size-[3em] !rounded-lg text-lg"
                             index={5}
                           />
                         </InputOTPGroup>

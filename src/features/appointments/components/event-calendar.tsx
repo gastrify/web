@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { RiCalendarCheckLine } from "@remixicon/react";
 import {
   addDays,
@@ -21,21 +21,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  addHoursToDate,
-  AgendaDaysToShow,
-  AgendaView,
-  CalendarDndProvider,
-  CalendarEvent,
-  CalendarView,
-  DayView,
-  EventDialog,
-  EventGap,
-  EventHeight,
-  MonthView,
-  WeekCellsHeight,
-  WeekView,
-} from "@/features/appointments/components";
 import { cn } from "@/shared/utils/cn";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -46,14 +31,31 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { useIsAdmin } from "@/shared/hooks/is-admin";
-import { useSession } from "@/shared/hooks/use-session";
+
+import {
+  AgendaDaysToShow,
+  EventGap,
+  EventHeight,
+  WeekCellsHeight,
+} from "@/features/appointments/constants";
+import { AgendaView } from "@/features/appointments/components/agenda-view";
+import { BookingDialog } from "@/features/appointments/components/booking-dialog";
+import { DayView } from "@/features/appointments/components/day-view";
+import { EventDialog } from "@/features/appointments/components/event-dialog";
+import { MonthView } from "@/features/appointments/components/month-view";
+import { WeekView } from "@/features/appointments/components/week-view";
+import { CalendarDndProvider } from "@/features/appointments/providers/calendar-dnd-provider";
+import type {
+  CalendarEvent,
+  CalendarView,
+} from "@/features/appointments/types";
+import { addMinutesToDate } from "@/features/appointments/utils/add-minutes-to-date";
 
 export interface EventCalendarProps {
   events?: CalendarEvent[];
   onEventAdd?: (event: CalendarEvent) => void;
   onEventUpdate?: (event: CalendarEvent) => void;
   onEventDelete?: (eventId: string) => void;
-  onEventSelect: (event: CalendarEvent) => void;
   className?: string;
   initialView?: CalendarView;
 }
@@ -63,7 +65,6 @@ export function EventCalendar({
   onEventAdd,
   onEventUpdate,
   onEventDelete,
-  onEventSelect,
   className,
   initialView = "month",
 }: EventCalendarProps) {
@@ -74,7 +75,6 @@ export function EventCalendar({
     null,
   );
   const isAdmin = useIsAdmin();
-  const { data: session } = useSession();
 
   // Add keyboard shortcuts for view switching
   useEffect(() => {
@@ -113,7 +113,8 @@ export function EventCalendar({
     };
   }, [isEventDialogOpen]);
 
-  const handlePrevious = () => {
+  // Memoize navigation handlers
+  const handlePrevious = useCallback(() => {
     if (view === "month") {
       setCurrentDate(subMonths(currentDate, 1));
     } else if (view === "week") {
@@ -121,12 +122,11 @@ export function EventCalendar({
     } else if (view === "day") {
       setCurrentDate(addDays(currentDate, -1));
     } else if (view === "agenda") {
-      // For agenda view, go back 30 days (a full month)
       setCurrentDate(addDays(currentDate, -AgendaDaysToShow));
     }
-  };
+  }, [currentDate, view]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (view === "month") {
       setCurrentDate(addMonths(currentDate, 1));
     } else if (view === "week") {
@@ -134,85 +134,72 @@ export function EventCalendar({
     } else if (view === "day") {
       setCurrentDate(addDays(currentDate, 1));
     } else if (view === "agenda") {
-      // For agenda view, go forward 30 days (a full month)
       setCurrentDate(addDays(currentDate, AgendaDaysToShow));
     }
-  };
+  }, [currentDate, view]);
 
-  const handleToday = () => {
+  const handleToday = useCallback(() => {
     setCurrentDate(new Date());
-  };
+  }, []);
 
-  const handleEventCreate = (startTime: Date) => {
-    if (!isAdmin) {
-      toast.error("Cannot book outside of available time slots");
-      return;
-    }
-    // Snap to 15-minute intervals
-    const minutes = startTime.getMinutes();
-    const remainder = minutes % 15;
-    if (remainder !== 0) {
-      if (remainder < 7.5) {
-        startTime.setMinutes(minutes - remainder);
-      } else {
-        startTime.setMinutes(minutes + (15 - remainder));
+  const handleEventSelect = useCallback(
+    (event: CalendarEvent) => {
+      if (!isAdmin && event.appointmentStatus !== "available") return;
+      setSelectedEvent(event);
+      setIsEventDialogOpen(true);
+    },
+    [isAdmin],
+  );
+
+  const handleEventCreate = useCallback(
+    (startTime: Date) => {
+      if (!isAdmin) return;
+
+      // Snap to 15-minute intervals
+      const minutes = startTime.getMinutes();
+      const remainder = minutes % 15;
+      if (remainder !== 0) {
+        if (remainder < 7.5) {
+          startTime.setMinutes(minutes - remainder);
+        } else {
+          startTime.setMinutes(minutes + (15 - remainder));
+        }
+        startTime.setSeconds(0);
+        startTime.setMilliseconds(0);
       }
-      startTime.setSeconds(0);
-      startTime.setMilliseconds(0);
-    }
 
-    const newEvent: CalendarEvent = {
-      id: "",
-      title: "",
-      start: startTime,
-      end: addHoursToDate(startTime, 1),
-      allDay: false,
-      type: "in-person",
-      userId: session?.user.id || "",
-      doctorId: isAdmin ? session?.user.id || "" : "",
-      status: isAdmin ? "available" : "booked",
-    };
-    setSelectedEvent(newEvent);
-    setIsEventDialogOpen(true);
-  };
+      const newEvent: CalendarEvent = {
+        id: "",
+        title: "",
+        start: startTime,
+        end: addMinutesToDate(startTime, 15),
+        allDay: false,
+        appointmentStatus: "available",
+        patientIdentificationNumber: "",
+      };
+
+      setSelectedEvent(newEvent);
+      setIsEventDialogOpen(true);
+    },
+    [isAdmin],
+  );
 
   const handleEventSave = (event: CalendarEvent) => {
-    // Validate appointment time
-    if (!isAdmin) {
-      const isWithinAvailability = events.some(
-        (e) =>
-          e.status === "available" &&
-          e.start <= event.start &&
-          e.end >= event.end,
-      );
-
-      if (!isWithinAvailability) {
-        toast.error("Cannot book outside of available time slots");
-        return;
-      }
-    }
-
     if (event.id) {
-      // Check if user has permission to update
-      const existingEvent = events.find((e) => e.id === event.id);
-      if (!isAdmin && existingEvent?.userId !== session?.user.id) {
-        toast.error("You don't have permission to update this appointment");
-        return;
-      }
-
       onEventUpdate?.(event);
-      toast(`Event "${event.title}" updated`, {
+      // Show toast notification when an event is updated
+      toast.success(`Event "${event.title}" updated`, {
         description: format(new Date(event.start), "MMM d, yyyy"),
-        position: "bottom-left",
       });
     } else {
       onEventAdd?.({
         ...event,
+        //TODO: Generate a unique ID for the event
         id: Math.random().toString(36).substring(2, 11),
       });
-      toast(`Event "${event.title}" added`, {
+      // Show toast notification when an event is added
+      toast.success(`Event "${event.title}" added`, {
         description: format(new Date(event.start), "MMM d, yyyy"),
-        position: "bottom-left",
       });
     }
     setIsEventDialogOpen(false);
@@ -221,21 +208,14 @@ export function EventCalendar({
 
   const handleEventDelete = (eventId: string) => {
     const deletedEvent = events.find((e) => e.id === eventId);
-
-    // Check if user has permission to delete
-    if (!isAdmin && deletedEvent?.userId !== session?.user.id) {
-      toast.error("You don't have permission to delete this appointment");
-      return;
-    }
-
     onEventDelete?.(eventId);
     setIsEventDialogOpen(false);
     setSelectedEvent(null);
 
+    // Show toast notification when an event is deleted
     if (deletedEvent) {
-      toast(`Event "${deletedEvent.title}" deleted`, {
+      toast.success(`Event "${deletedEvent.title}" deleted`, {
         description: format(new Date(deletedEvent.start), "MMM d, yyyy"),
-        position: "bottom-left",
       });
     }
   };
@@ -244,9 +224,8 @@ export function EventCalendar({
     onEventUpdate?.(updatedEvent);
 
     // Show toast notification when an event is updated via drag and drop
-    toast(`Event "${updatedEvent.title}" moved`, {
+    toast.success(`Event "${updatedEvent.title}" moved`, {
       description: format(new Date(updatedEvent.start), "MMM d, yyyy"),
-      position: "bottom-left",
     });
   };
 
@@ -390,7 +369,7 @@ export function EventCalendar({
                   size={16}
                   aria-hidden="true"
                 />
-                <span className="max-sm:sr-only">New event</span>
+                <span className="max-sm:sr-only">New appointment</span>
               </Button>
             )}
           </div>
@@ -401,7 +380,7 @@ export function EventCalendar({
             <MonthView
               currentDate={currentDate}
               events={events}
-              onEventSelect={onEventSelect || (() => {})}
+              onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
             />
           )}
@@ -409,7 +388,7 @@ export function EventCalendar({
             <WeekView
               currentDate={currentDate}
               events={events}
-              onEventSelect={onEventSelect || (() => {})}
+              onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
             />
           )}
@@ -417,7 +396,7 @@ export function EventCalendar({
             <DayView
               currentDate={currentDate}
               events={events}
-              onEventSelect={onEventSelect || (() => {})}
+              onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
             />
           )}
@@ -425,21 +404,34 @@ export function EventCalendar({
             <AgendaView
               currentDate={currentDate}
               events={events}
-              onEventSelect={onEventSelect || (() => {})}
+              onEventSelect={handleEventSelect}
             />
           )}
         </div>
 
-        <EventDialog
-          event={selectedEvent}
-          isOpen={isEventDialogOpen}
-          onClose={() => {
-            setIsEventDialogOpen(false);
-            setSelectedEvent(null);
-          }}
-          onSave={handleEventSave}
-          onDelete={handleEventDelete}
-        />
+        {isAdmin && (
+          <EventDialog
+            event={selectedEvent}
+            isOpen={isEventDialogOpen}
+            onClose={() => {
+              setIsEventDialogOpen(false);
+              setSelectedEvent(null);
+            }}
+            onSave={handleEventSave}
+            onDelete={handleEventDelete}
+          />
+        )}
+
+        {!isAdmin && selectedEvent && (
+          <BookingDialog
+            event={selectedEvent}
+            isOpen={isEventDialogOpen}
+            onClose={() => {
+              setIsEventDialogOpen(false);
+              setSelectedEvent(null);
+            }}
+          />
+        )}
       </CalendarDndProvider>
     </div>
   );

@@ -35,7 +35,7 @@ export function MagicLinkForm() {
               <div className="relative">
                 <FormControl>
                   <Input
-                    className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                    className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                     type="email"
                     disabled={isPending}
                     placeholder={

@@ -25,7 +25,7 @@ export function NotificationsForm() {
 
   return (
     <>
-      <div className="relative mx-auto w-full max-w-sm aspect-square">
+      <div className="relative mx-auto aspect-square w-full max-w-sm">
         <Image src="/coming-soon.svg" alt="Coming soon" fill />
       </div>
 
@@ -48,7 +48,7 @@ export function NotificationsForm() {
                   defaultValue={field.value}
                   className="flex flex-col space-y-1"
                 >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
+                  <FormItem className="flex items-center space-y-0 space-x-3">
                     <FormControl>
                       <RadioGroupItem value="all" />
                     </FormControl>
@@ -56,7 +56,7 @@ export function NotificationsForm() {
                       All new messages
                     </FormLabel>
                   </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
+                  <FormItem className="flex items-center space-y-0 space-x-3">
                     <FormControl>
                       <RadioGroupItem value="mentions" />
                     </FormControl>
@@ -64,7 +64,7 @@ export function NotificationsForm() {
                       Direct messages and mentions
                     </FormLabel>
                   </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
+                  <FormItem className="flex items-center space-y-0 space-x-3">
                     <FormControl>
                       <RadioGroupItem value="none" />
                     </FormControl>
@@ -171,7 +171,7 @@ export function NotificationsForm() {
           control={form.control}
           name="mobile"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormItem className="flex flex-row items-start space-y-0 space-x-3">
               <FormControl>
                 <Checkbox
                   checked={field.value}

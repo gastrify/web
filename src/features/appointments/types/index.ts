@@ -9,11 +9,8 @@ export interface CalendarEvent {
   allDay?: boolean;
   color?: EventColor;
   location?: string;
-  type: "virtual" | "in-person";
-  userId: string;
-  doctorId: string;
-  meetingLink?: string;
-  status: "available" | "booked";
+  appointmentStatus: "available" | "reserved";
+  patientIdentificationNumber?: string;
 }
 
 export type EventColor =

@@ -18,9 +18,9 @@ export const useCredentialsMutation = ({ form }: Props) => {
 
   return useMutation({
     mutationFn: async (values: CredentialsFormValues) => {
-      const { error } = await authClient.signIn.username(
+      const { error } = await authClient.signIn.email(
         {
-          username: values.username,
+          email: values.email,
           password: values.password,
         },
         {
@@ -40,12 +40,12 @@ export const useCredentialsMutation = ({ form }: Props) => {
       if (error.status === RATE_LIMIT_ERROR_CODE) return;
 
       switch (error.code) {
-        case "INVALID_USERNAME_OR_PASSWORD":
-          form.setError("username", {
-            message: "Invalid username or password.",
+        case "INVALID_EMAIL_OR_PASSWORD":
+          form.setError("email", {
+            message: "Invalid email or password.",
           });
           form.setError("password", {
-            message: "Invalid username or password.",
+            message: "Invalid email or password.",
           });
           return;
 

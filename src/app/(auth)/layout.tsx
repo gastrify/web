@@ -6,7 +6,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col min-h-svh p-6 md:p-10">
+    <div className="flex min-h-svh flex-col p-6 md:p-10">
       <header className="flex items-center justify-end gap-2">
         <div className="flex items-center justify-between gap-2">
           <ThemeSwitch />

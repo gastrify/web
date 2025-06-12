@@ -1,6 +1,4 @@
-"use client";
-
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, useCallback } from "react";
 
 interface EventVisibilityOptions {
   eventHeight: number;
@@ -26,29 +24,25 @@ export function useEventVisibility({
   const observerRef = useRef<ResizeObserver | null>(null);
   const [contentHeight, setContentHeight] = useState<number | null>(null);
 
+  const updateHeight = useCallback(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.clientHeight);
+    }
+  }, []);
+
   // Use layout effect for synchronous measurement before paint
   useLayoutEffect(() => {
     if (!contentRef.current) return;
 
-    // Function to update the content height
-    const updateHeight = () => {
-      if (contentRef.current) {
-        setContentHeight(contentRef.current.clientHeight);
-      }
-    };
-
-    // Initial measurement (synchronous)
     updateHeight();
 
     // Create observer only once and reuse it
     if (!observerRef.current) {
       observerRef.current = new ResizeObserver(() => {
-        // Just call updateHeight when resize is detected
         updateHeight();
       });
     }
 
-    // Start observing the content container
     observerRef.current.observe(contentRef.current);
 
     // Clean up function
@@ -57,7 +51,7 @@ export function useEventVisibility({
         observerRef.current.disconnect();
       }
     };
-  }, []);
+  }, [updateHeight]);
 
   // Function to calculate visible events for a cell
   const getVisibleEventCount = useMemo(() => {

@@ -1,8 +1,10 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
+import { memo } from "react";
 
 import { cn } from "@/shared/utils/cn";
+
 import { useCalendarDnd } from "@/features/appointments/providers/calendar-dnd-provider";
 
 interface DroppableCellProps {
@@ -14,7 +16,7 @@ interface DroppableCellProps {
   onClick?: () => void;
 }
 
-export function DroppableCell({
+export const DroppableCell = memo(function DroppableCell({
   id,
   date,
   time,
@@ -45,7 +47,7 @@ export function DroppableCell({
       ref={setNodeRef}
       onClick={onClick}
       className={cn(
-        "data-dragging:bg-accent flex h-full flex-col px-0.5 py-1 sm:px-1",
+        "data-dragging:bg-accent flex h-full flex-col overflow-hidden px-0.5 py-1 sm:px-1",
         className,
       )}
       title={formattedTime ? `${formattedTime}` : undefined}
@@ -54,4 +56,4 @@ export function DroppableCell({
       {children}
     </div>
   );
-}
+});

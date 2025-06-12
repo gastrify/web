@@ -33,7 +33,7 @@ export function ForgotPasswordForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="border-none bg-background shadow-none">
+      <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
             <TypographyH1>Forgot password</TypographyH1>
@@ -41,7 +41,8 @@ export function ForgotPasswordForm({
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Please enter your email address to receive a password reset link.
+              Please enter your email address to receive a password reset link
+              🔒.
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -58,7 +59,7 @@ export function ForgotPasswordForm({
                     <div className="relative">
                       <FormControl>
                         <Input
-                          className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           type="email"
                           disabled={isPending}
                           placeholder={

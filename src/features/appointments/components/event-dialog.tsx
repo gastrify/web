@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { RiCalendarLine, RiDeleteBinLine } from "@remixicon/react";
-import { format } from "date-fns";
+import { useEffect, useMemo } from "react";
+import { format, isBefore } from "date-fns";
+import { CalendarIcon, IdCardIcon, TrashIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import type {
-  CalendarEvent,
-  EventColor,
-} from "@/features/appointments/types/index";
-import { cn } from "@/shared/utils/cn";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
-import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +17,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -35,10 +39,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Textarea } from "@/shared/components/ui/textarea";
+import { cn } from "@/shared/utils/cn";
 import { useIsAdmin } from "@/shared/hooks/is-admin";
-import { useSession } from "@/shared/hooks/use-session";
-import { toast } from "sonner";
+
+import {
+  DefaultEndHour,
+  DefaultStartHour,
+  EndHour,
+  StartHour,
+} from "@/features/appointments/constants";
+import type { CalendarEvent, EventColor } from "@/features/appointments/types";
 
 interface EventDialogProps {
   event: CalendarEvent | null;
@@ -48,6 +58,34 @@ interface EventDialogProps {
   onDelete: (eventId: string) => void;
 }
 
+const eventDialogFormSchema = z
+  .object({
+    startDate: z.date(),
+    endDate: z.date(),
+    startTime: z.string().regex(/^\d{2}:\d{2}$/),
+    endTime: z.string().regex(/^\d{2}:\d{2}$/),
+    appointmentStatus: z.enum(["available", "reserved"]),
+    patientIdentificationNumber: z.string().trim().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.appointmentStatus === "reserved") {
+        return (
+          data.patientIdentificationNumber?.length === 10 &&
+          /^\d+$/.test(data.patientIdentificationNumber)
+        );
+      }
+
+      return true;
+    },
+    {
+      path: ["patientIdentificationNumber"],
+      message: "Patient ID must be exactly 10 digits",
+    },
+  );
+
+type EventDialogFormValues = z.infer<typeof eventDialogFormSchema>;
+
 export function EventDialog({
   event,
   isOpen,
@@ -55,231 +93,469 @@ export function EventDialog({
   onSave,
   onDelete,
 }: EventDialogProps) {
+  // const [description, setDescription] = useState("");
   const isAdmin = useIsAdmin();
-  const { data: session } = useSession();
-  const [title, setTitle] = useState(event?.title || "");
-  const [description, setDescription] = useState(event?.description || "");
-  const [start, setStart] = useState<Date>(event?.start || new Date());
-  const [end, setEnd] = useState<Date>(event?.end || new Date());
-  const [allDay, setAllDay] = useState(event?.allDay || false);
-  const [color, setColor] = useState<EventColor>(event?.color || "sky");
-  const [location, setLocation] = useState(event?.location || "");
-  const [type, setType] = useState<"virtual" | "in-person">(
-    event?.type || "in-person",
-  );
-  const [meetingLink, setMeetingLink] = useState(event?.meetingLink || "");
+
+  // Debug log to check what event is being passed
+  useEffect(() => {
+    console.log("EventDialog received event:", event);
+  }, [event]);
+
+  const form = useForm<EventDialogFormValues>({
+    resolver: zodResolver(eventDialogFormSchema),
+    defaultValues: {
+      startDate: new Date(),
+      endDate: new Date(),
+      startTime: `${DefaultStartHour}:00`,
+      endTime: `${DefaultEndHour}:00`,
+      appointmentStatus: "available",
+      patientIdentificationNumber: "",
+    },
+  });
 
   useEffect(() => {
     if (event) {
-      setTitle(event.title);
-      setDescription(event.description || "");
-      setStart(new Date(event.start));
-      setEnd(new Date(event.end));
-      setAllDay(event.allDay || false);
-      setColor(event.color || "sky");
-      setLocation(event.location || "");
-      setType(event.type || "in-person");
-      setMeetingLink(event.meetingLink || "");
+      // setDescription(event.description || "");
+
+      const start = new Date(event.start);
+      const end = new Date(event.end);
+
+      form.setValue("startDate", start);
+      form.setValue("endDate", end);
+      form.setValue("startTime", formatTimeForInput(start));
+      form.setValue("endTime", formatTimeForInput(end));
+      form.setValue("appointmentStatus", event.appointmentStatus);
+      form.setValue(
+        "patientIdentificationNumber",
+        event.patientIdentificationNumber,
+      );
+
+      form.clearErrors(); // Reset error when opening dialog
+    } else {
+      form.reset();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event]);
 
-  const handleSave = () => {
-    if (!title) {
-      toast.error("Please enter a title");
-      return;
-    }
-
-    if (type === "virtual" && !meetingLink) {
-      toast.error("Please enter a meeting link for virtual appointments");
-      return;
-    }
-
-    if (!session?.user?.id) {
-      toast.error("You must be logged in to create appointments");
-      return;
-    }
-
-    const updatedEvent: CalendarEvent = {
-      ...event!,
-      title,
-      description,
-      start,
-      end,
-      allDay,
-      color,
-      location,
-      type,
-      meetingLink: type === "virtual" ? meetingLink : undefined,
-      userId: isAdmin ? event?.userId || "" : session.user.id,
-      doctorId: isAdmin ? session.user.id : event?.doctorId || "",
-      status: event?.status || "available",
-    };
-
-    onSave(updatedEvent);
+  const formatTimeForInput = (date: Date) => {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = Math.floor(date.getMinutes() / 15) * 15;
+    return `${hours}:${minutes.toString().padStart(2, "0")}`;
   };
 
+  // Memoize time options so they're only calculated once
+  const timeOptions = useMemo(() => {
+    const options = [];
+    for (let hour = StartHour; hour <= EndHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const formattedHour = hour.toString().padStart(2, "0");
+        const formattedMinute = minute.toString().padStart(2, "0");
+        const value = `${formattedHour}:${formattedMinute}`;
+        // Use a fixed date to avoid unnecessary date object creations
+        const date = new Date(2000, 0, 1, hour, minute);
+        const label = format(date, "h:mm a");
+        options.push({ value, label });
+      }
+    }
+    return options;
+  }, []); // Empty dependency array ensures this only runs once
+
+  const onSubmit = (values: EventDialogFormValues) => {
+    // console.log(values);
+
+    const start = new Date(values.startDate);
+    const end = new Date(values.endDate);
+
+    const [startHours = 0, startMinutes = 0] = values.startTime
+      .split(":")
+      .map(Number);
+    const [endHours = 0, endMinutes = 0] = values.endTime
+      .split(":")
+      .map(Number);
+
+    if (
+      startHours < StartHour ||
+      startHours > EndHour ||
+      endHours < StartHour ||
+      endHours > EndHour
+    ) {
+      form.setError("startTime", {
+        message: `Selected time must be between ${StartHour}:00 and ${EndHour}:00`,
+      });
+      form.setError("endTime", {
+        message: `Selected time must be between ${StartHour}:00 and ${EndHour}:00`,
+      });
+      return;
+    }
+
+    start.setHours(startHours, startMinutes, 0);
+    end.setHours(endHours, endMinutes, 0);
+
+    // Validate that end date is not before start date
+    if (isBefore(end, start)) {
+      form.setError("endDate", {
+        message: "End date cannot be before start date",
+      });
+      form.setError("endTime", {
+        message: "End date cannot be before start date",
+      });
+      return;
+    }
+
+    const eventTitle =
+      (values.appointmentStatus === "available" ? "Available" : "Reserved") +
+      " Appointment";
+
+    const eventColor: EventColor =
+      values.appointmentStatus === "available" ? "emerald" : "sky";
+
+    onSave({
+      id: event?.id || "",
+      title: eventTitle,
+      start,
+      end,
+      color: eventColor,
+      appointmentStatus: values.appointmentStatus,
+      patientIdentificationNumber: values.patientIdentificationNumber,
+    });
+
+    // resetForm();
+    form.reset();
+  };
+
+  const handleDelete = () => {
+    if (event?.id) {
+      onDelete(event.id);
+    }
+  };
+
+  // Updated color options to match types.ts
+  // const colorOptions: Array<{
+  //   value: EventColor;
+  //   label: string;
+  //   bgClass: string;
+  //   borderClass: string;
+  // }> = [
+  //   {
+  //     value: "sky",
+  //     label: "Sky",
+  //     bgClass: "bg-sky-400 data-[state=checked]:bg-sky-400",
+  //     borderClass: "border-sky-400 data-[state=checked]:border-sky-400",
+  //   },
+  //   {
+  //     value: "amber",
+  //     label: "Amber",
+  //     bgClass: "bg-amber-400 data-[state=checked]:bg-amber-400",
+  //     borderClass: "border-amber-400 data-[state=checked]:border-amber-400",
+  //   },
+  //   {
+  //     value: "violet",
+  //     label: "Violet",
+  //     bgClass: "bg-violet-400 data-[state=checked]:bg-violet-400",
+  //     borderClass: "border-violet-400 data-[state=checked]:border-violet-400",
+  //   },
+  //   {
+  //     value: "rose",
+  //     label: "Rose",
+  //     bgClass: "bg-rose-400 data-[state=checked]:bg-rose-400",
+  //     borderClass: "border-rose-400 data-[state=checked]:border-rose-400",
+  //   },
+  //   {
+  //     value: "emerald",
+  //     label: "Emerald",
+  //     bgClass: "bg-emerald-400 data-[state=checked]:bg-emerald-400",
+  //     borderClass: "border-emerald-400 data-[state=checked]:border-emerald-400",
+  //   },
+  //   {
+  //     value: "orange",
+  //     label: "Orange",
+  //     bgClass: "bg-orange-400 data-[state=checked]:bg-orange-400",
+  //     borderClass: "border-orange-400 data-[state=checked]:border-orange-400",
+  //   },
+  // ];
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{event?.id ? "Edit Event" : "New Event"}</DialogTitle>
-          <DialogDescription>
-            {isAdmin
-              ? "Create or edit availability slots"
-              : "Book an appointment"}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={isAdmin ? "Availability Slot" : "Appointment Title"}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add a description"
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label>Type</Label>
-            <RadioGroup
-              value={type}
-              onValueChange={(value: "virtual" | "in-person") => setType(value)}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="in-person" id="in-person" />
-                <Label htmlFor="in-person">In-person</Label>
+    <Form {...form}>
+      <form id="event-dialog-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {event?.id ? "Edit Appointment" : "Create Appointment"}
+              </DialogTitle>
+
+              <DialogDescription className="sr-only">
+                {event?.id
+                  ? "Edit the details of this appointment"
+                  : "Add a new appointment to your schedule"}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-2 flex flex-col gap-6">
+              <div className="flex gap-4">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-1 flex-col">
+                      <FormLabel>Start Date</FormLabel>
+
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              type="button"
+                              variant={"outline"}
+                              className={cn(
+                                "w-fit pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            captionLayout="dropdown"
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-1 flex-col">
+                      <FormLabel>Start Time</FormLabel>
+
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select time" />
+                          </SelectTrigger>
+                        </FormControl>
+
+                        <SelectContent>
+                          {timeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="virtual" id="virtual" />
-                <Label htmlFor="virtual">Virtual</Label>
+
+              <div className="flex gap-4">
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-1 flex-col">
+                      <FormLabel>End Date</FormLabel>
+
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              type="button"
+                              variant={"outline"}
+                              className={cn(
+                                "w-fit pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(value) => {
+                              form.clearErrors("endTime");
+                              field.onChange(value);
+                            }}
+                            captionLayout="dropdown"
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-1 flex-col">
+                      <FormLabel>End Time</FormLabel>
+
+                      <Select
+                        onValueChange={(value) => {
+                          form.clearErrors("endDate");
+                          field.onChange(value);
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select time" />
+                          </SelectTrigger>
+                        </FormControl>
+
+                        <SelectContent>
+                          {timeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </RadioGroup>
-          </div>
-          {type === "virtual" && (
-            <div className="grid gap-2">
-              <Label htmlFor="meetingLink">Meeting Link</Label>
-              <Input
-                id="meetingLink"
-                value={meetingLink}
-                onChange={(e) => setMeetingLink(e.target.value)}
-                placeholder="Enter meeting link"
+
+              <FormField
+                control={form.control}
+                name="appointmentStatus"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-4">
+                    <FormLabel>Appointment Status</FormLabel>
+
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex"
+                      >
+                        <FormItem className="flex items-center gap-3">
+                          <FormControl>
+                            <RadioGroupItem value="available" />
+                          </FormControl>
+
+                          <FormLabel className="font-normal">
+                            Available
+                          </FormLabel>
+                        </FormItem>
+
+                        <FormItem className="flex items-center gap-3">
+                          <FormControl>
+                            <RadioGroupItem value="reserved" />
+                          </FormControl>
+
+                          <FormLabel className="font-normal">
+                            Reserved
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
+
+              {form.watch("appointmentStatus") === "reserved" && (
+                <FormField
+                  control={form.control}
+                  name="patientIdentificationNumber"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="flex flex-col gap-4">
+                      <FormLabel>Patient Identification Number</FormLabel>
+
+                      <div className="relative">
+                        <FormControl>
+                          <Input
+                            maxLength={10}
+                            minLength={10}
+                            className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
+                            placeholder={
+                              fieldState.invalid ? undefined : "1234567890"
+                            }
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <div
+                          className={cn(
+                            "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
+                            fieldState.invalid && "text-destructive-foreground",
+                            fieldState.isDirty &&
+                              !fieldState.invalid &&
+                              "text-foreground",
+                          )}
+                        >
+                          <IdCardIcon size={16} aria-hidden="true" />
+                        </div>
+                      </div>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
-          )}
-          {type === "in-person" && (
-            <div className="grid gap-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Enter location"
-              />
-            </div>
-          )}
-          <div className="grid gap-2">
-            <Label>Date & Time</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal",
-                      !start && "text-muted-foreground",
-                    )}
-                  >
-                    <RiCalendarLine className="mr-2 h-4 w-4" />
-                    {start ? format(start, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={start}
-                    onSelect={(date) => date && setStart(date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal",
-                      !end && "text-muted-foreground",
-                    )}
-                  >
-                    <RiCalendarLine className="mr-2 h-4 w-4" />
-                    {end ? format(end, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={end}
-                    onSelect={(date) => date && setEnd(date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <Label>Color</Label>
-            <Select
-              value={color}
-              onValueChange={(value: EventColor) => setColor(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a color" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sky">Sky</SelectItem>
-                <SelectItem value="amber">Amber</SelectItem>
-                <SelectItem value="violet">Violet</SelectItem>
-                <SelectItem value="rose">Rose</SelectItem>
-                <SelectItem value="emerald">Emerald</SelectItem>
-                <SelectItem value="orange">Orange</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="allDay"
-              checked={allDay}
-              onCheckedChange={(checked) => setAllDay(checked as boolean)}
-            />
-            <Label htmlFor="allDay">All day</Label>
-          </div>
-        </div>
-        <DialogFooter>
-          {event?.id && (
-            <Button
-              variant="destructive"
-              onClick={() => onDelete(event.id)}
-              className="mr-auto"
-            >
-              <RiDeleteBinLine className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          )}
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+
+            <DialogFooter className="flex-row sm:justify-between">
+              {event?.id && isAdmin && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleDelete}
+                  aria-label="Delete event"
+                >
+                  <TrashIcon size={16} aria-hidden="true" />
+                </Button>
+              )}
+              <div className="flex flex-1 justify-end gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+
+                <Button type="submit" form="event-dialog-form">
+                  Save
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </form>
+    </Form>
   );
 }

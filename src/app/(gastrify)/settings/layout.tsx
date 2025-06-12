@@ -20,7 +20,7 @@ export default function SettingsLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-full flex flex-col space-y-8">
+    <div className="flex h-full flex-col space-y-8">
       <MobileWrapper>
         <div className="space-y-2">
           <TypographyH1>Settings</TypographyH1>
@@ -31,12 +31,12 @@ export default function SettingsLayout({
         </div>
       </MobileWrapper>
 
-      <div className="flex-1 flex gap-6 min-h-0">
+      <div className="flex min-h-0 flex-1 gap-6">
         <SettingsSidebar />
 
         <PageWrapper>
-          <ScrollArea className="flex-1 h-full">
-            <div className="space-y-8 pb-16 px-4">{children}</div>
+          <ScrollArea className="h-full flex-1">
+            <div className="space-y-8 px-4 pb-16">{children}</div>
           </ScrollArea>
         </PageWrapper>
       </div>

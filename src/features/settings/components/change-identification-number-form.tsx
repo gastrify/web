@@ -15,9 +15,9 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
-import { useChangeUsernameForm } from "@/features/settings/hooks/use-change-username-form";
+import { useChangeIdentificationNumberForm } from "@/features/settings/hooks/use-change-identification-number-form";
 
-export function ChangeUsernameForm() {
+export function ChangeIdentificationNumberForm() {
   const {
     form,
     canSubmit,
@@ -29,7 +29,7 @@ export function ChangeUsernameForm() {
     isSessionError,
     refetchSession,
     isSessionRefetching,
-  } = useChangeUsernameForm();
+  } = useChangeIdentificationNumberForm();
 
   return (
     <Form {...form}>
@@ -43,13 +43,13 @@ export function ChangeUsernameForm() {
         <FormField
           disabled={isPending}
           control={form.control}
-          name="username"
+          name="identificationNumber"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-wrap gap-2 items-center justify-start">
-                <FormLabel>Username</FormLabel>
+              <div className="flex flex-wrap items-center justify-start gap-2">
+                <FormLabel>Identification Number</FormLabel>
 
-                {isSessionLoading && <Skeleton className="w-[200px] h-8" />}
+                {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
                 {isSessionError && (
                   <Button
@@ -67,8 +67,8 @@ export function ChangeUsernameForm() {
                 )}
 
                 {isSessionSuccess && (
-                  <FormControl className="flex-1 sm:flex-none sm:w-fit">
-                    <Input placeholder="davidaragundy" {...field} />
+                  <FormControl className="flex-1 sm:w-fit sm:flex-none">
+                    <Input placeholder="1234567890" {...field} />
                   </FormControl>
                 )}
 
@@ -87,9 +87,9 @@ export function ChangeUsernameForm() {
                 )}
               </div>
 
-              <FormDescription className="text-sm text-muted-foreground">
-                This is your public display username. It can be your real name
-                or a pseudonym.
+              <FormDescription className="text-muted-foreground text-sm">
+                This is your identification number. It will not be publicly
+                visible.
               </FormDescription>
 
               <FormMessage />

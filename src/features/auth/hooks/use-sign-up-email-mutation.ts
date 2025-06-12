@@ -23,8 +23,7 @@ export const useSignUpEmailMutation = ({ form }: Props) => {
         email: values.email,
         password: values.password,
         name: values.name,
-        username: values.username,
-        displayUsername: values.username,
+        identificationNumber: values.identificationNumber,
         image,
         callbackURL: "/home",
       });
@@ -45,13 +44,18 @@ export const useSignUpEmailMutation = ({ form }: Props) => {
     onError: (error: AuthClientError, values) => {
       if (error.status === RATE_LIMIT_ERROR_CODE) return;
 
-      switch (error.code) {
-        case "USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER":
-          form.setError("username", {
-            message: "Username is already taken. Please try another.",
-          });
-          return;
+      if (
+        (error as unknown as { details: { cause: { constraint: string } } })
+          .details.cause.constraint === "user_identification_number_unique"
+      ) {
+        form.setError("identificationNumber", {
+          message:
+            "Identification number is already taken. Please try another.",
+        });
+        return;
+      }
 
+      switch (error.code) {
         case "USER_ALREADY_EXISTS":
           form.setError("email", {
             message: "A user with that email already exists",

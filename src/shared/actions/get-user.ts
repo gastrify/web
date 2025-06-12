@@ -9,21 +9,24 @@ import type { ActionResponse, User } from "@/shared/types";
 
 interface Props {
   id?: string;
-  username?: string;
+  identificationNumber?: string;
 }
 
-type ErrorCode = "USER_NOT_FOUND" | "MISSING_ID_OR_USERNAME" | "DATABASE_ERROR";
+type ErrorCode =
+  | "USER_NOT_FOUND"
+  | "MISSING_ID_OR_IDENTIFICATION_NUMBER"
+  | "DATABASE_ERROR";
 
 export const getUser = async ({
   id,
-  username,
+  identificationNumber,
 }: Props): Promise<ActionResponse<User, ErrorCode>> => {
-  if (!id && !username)
+  if (!id && !identificationNumber)
     return {
       data: null,
       error: {
-        code: "MISSING_ID_OR_USERNAME",
-        message: "Either id or username is required",
+        code: "MISSING_ID_OR_IDENTIFICATION_NUMBER",
+        message: "Either id or identification number is required",
       },
     };
 
@@ -31,7 +34,12 @@ export const getUser = async ({
     db
       .select()
       .from(user)
-      .where(or(eq(user.id, id ?? ""), eq(user.username, username ?? "")))
+      .where(
+        or(
+          eq(user.id, id ?? ""),
+          eq(user.identificationNumber, identificationNumber ?? ""),
+        ),
+      )
       .limit(1),
   );
 

@@ -1,98 +1,87 @@
-import { addDays, setHours, setMinutes } from "date-fns";
-import type { CalendarEvent } from "./types";
+import { addDays, setHours, setMinutes, subDays } from "date-fns";
 
-// Helper function to create a date with specific time
-const createDate = (date: Date, hours: number, minutes: number) => {
-  return setMinutes(setHours(date, hours), minutes);
-};
+import type { CalendarEvent } from "@/features/appointments/types";
 
-// Get today's date
-const today = new Date();
-
-// Create mock events
+// Sample events data with hardcoded times
 export const mockEvents: CalendarEvent[] = [
   {
-    id: "1",
-    title: "Morning Check-up",
-    description: "Regular health check-up appointment",
-    start: createDate(today, 9, 0),
-    end: createDate(today, 10, 0),
-    allDay: false,
-    color: "sky",
-    location: "Room 101",
-    type: "in-person",
-    userId: "user1",
-    doctorId: "doctor1",
-    status: "booked",
-  },
-  {
     id: "2",
-    title: "Virtual Consultation",
-    description: "Online consultation with Dr. Smith",
-    start: createDate(today, 14, 30),
-    end: createDate(today, 15, 30),
-    allDay: false,
-    color: "violet",
-    type: "virtual",
-    userId: "user2",
-    doctorId: "doctor1",
-    meetingLink: "https://meet.example.com/123",
-    status: "booked",
-  },
-  {
-    id: "3",
-    title: "Available Slot",
-    description: "Open appointment slot",
-    start: createDate(addDays(today, 1), 11, 0),
-    end: createDate(addDays(today, 1), 12, 0),
-    allDay: false,
-    color: "emerald",
-    location: "Room 102",
-    type: "in-person",
-    userId: "doctor1",
-    doctorId: "doctor1",
-    status: "available",
+    title: "Project Deadline",
+    description: "Submit final deliverables",
+    start: setMinutes(setHours(subDays(new Date(), 9), 13), 0), // 1:00 PM, 9 days before
+    end: setMinutes(setHours(subDays(new Date(), 9), 15), 30), // 3:30 PM, 9 days before
+    color: "amber",
+    location: "Office",
+    appointmentStatus: "available",
   },
   {
     id: "4",
-    title: "Follow-up Appointment",
-    description: "Post-treatment follow-up",
-    start: createDate(addDays(today, 2), 15, 0),
-    end: createDate(addDays(today, 2), 16, 0),
-    allDay: false,
-    color: "rose",
-    location: "Room 103",
-    type: "in-person",
-    userId: "user3",
-    doctorId: "doctor1",
-    status: "booked",
+    title: "Team Meeting",
+    description: "Weekly team sync",
+    start: setMinutes(setHours(new Date(), 10), 0), // 10:00 AM today
+    end: setMinutes(setHours(new Date(), 11), 0), // 11:00 AM today
+    color: "sky",
+    location: "Conference Room A",
+    appointmentStatus: "available",
   },
   {
     id: "5",
-    title: "All Day Conference",
-    description: "Medical conference",
-    start: createDate(addDays(today, 3), 0, 0),
-    end: createDate(addDays(today, 3), 23, 59),
-    allDay: true,
-    color: "orange",
-    location: "Conference Hall",
-    type: "in-person",
-    userId: "doctor1",
-    doctorId: "doctor1",
-    status: "booked",
+    title: "Lunch with Client",
+    description: "Discuss new project requirements",
+    start: setMinutes(setHours(addDays(new Date(), 1), 12), 0), // 12:00 PM, 1 day from now
+    end: setMinutes(setHours(addDays(new Date(), 1), 13), 15), // 1:15 PM, 1 day from now
+    color: "emerald",
+    location: "Downtown Cafe",
+    appointmentStatus: "available",
   },
   {
-    id: "6",
-    title: "Available Morning Slot",
-    description: "Open morning appointment",
-    start: createDate(addDays(today, 4), 9, 0),
-    end: createDate(addDays(today, 4), 10, 0),
-    allDay: false,
+    id: "8",
+    title: "Team Meeting",
+    description: "Weekly team sync",
+    start: setMinutes(setHours(addDays(new Date(), 5), 9), 0), // 9:00 AM, 5 days from now
+    end: setMinutes(setHours(addDays(new Date(), 5), 10), 30), // 10:30 AM, 5 days from now
+    color: "orange",
+    location: "Conference Room A",
+    appointmentStatus: "available",
+  },
+  {
+    id: "9",
+    title: "Review contracts",
+    description: "Weekly team sync",
+    start: setMinutes(setHours(addDays(new Date(), 5), 14), 0), // 2:00 PM, 5 days from now
+    end: setMinutes(setHours(addDays(new Date(), 5), 15), 30), // 3:30 PM, 5 days from now
+    color: "sky",
+    location: "Conference Room A",
+    appointmentStatus: "available",
+  },
+  {
+    id: "10",
+    title: "Team Meeting",
+    description: "Weekly team sync",
+    start: setMinutes(setHours(addDays(new Date(), 5), 9), 45), // 9:45 AM, 5 days from now
+    end: setMinutes(setHours(addDays(new Date(), 5), 11), 0), // 11:00 AM, 5 days from now
     color: "amber",
-    location: "Room 101",
-    type: "in-person",
-    userId: "doctor1",
-    doctorId: "doctor1",
-    status: "available",
+    location: "Conference Room A",
+    appointmentStatus: "available",
+  },
+  {
+    id: "11",
+    title: "Marketing Strategy Session",
+    description: "Quarterly marketing planning",
+    start: setMinutes(setHours(addDays(new Date(), 9), 10), 0), // 10:00 AM, 9 days from now
+    end: setMinutes(setHours(addDays(new Date(), 9), 15), 30), // 3:30 PM, 9 days from now
+    color: "emerald",
+    location: "Marketing Department",
+    appointmentStatus: "available",
+  },
+  {
+    id: "13",
+    title: "Product Development Workshop",
+    description: "Brainstorming for new features",
+    start: setMinutes(setHours(addDays(new Date(), 26), 9), 0), // 9:00 AM, 26 days from now
+    end: setMinutes(setHours(addDays(new Date(), 27), 17), 0), // 5:00 PM, 27 days from now
+    color: "rose",
+    location: "Innovation Lab",
+    appointmentStatus: "available",
   },
 ];

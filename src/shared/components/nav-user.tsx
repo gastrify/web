@@ -31,7 +31,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { useNavUser } from "@/shared/hooks/user-nav-user";
+import { useNavUser } from "@/shared/hooks/use-nav-user";
 import type { Session } from "@/shared/types";
 
 interface Props {
@@ -78,7 +78,7 @@ export const NavUser = ({ user }: Props) => {
               title="Toggle theme"
               aria-label="Toggle theme"
               variant="ghost"
-              className="w-full !p-0 justify-start"
+              className="w-full justify-start !p-0"
               onClick={() => handleThemeChange()}
             >
               {theme === "dark" ? <MoonIcon /> : <SunIcon />}
@@ -87,7 +87,7 @@ export const NavUser = ({ user }: Props) => {
 
             <Button
               variant="ghost"
-              className="w-full !p-0 text-destructive justify-start"
+              className="text-destructive w-full justify-start !p-0"
               onClick={() => handleSignOut()}
             >
               {isSigningOut ? (
@@ -104,14 +104,14 @@ export const NavUser = ({ user }: Props) => {
   }
 
   return (
-    <div className="w-full flex items-center gap-4">
+    <div className="flex w-full items-center gap-4">
       <div className="relative">
         <Avatar className="size-10">
           <AvatarImage src={user.image || undefined} alt={user.name} />
           <AvatarFallback>
             {user.name
-              ?.split(" ")
-              .map((name) => name[0])
+              .split(" ")
+              .map((name, index) => (index % 2 === 0 ? name[0] : ""))
               .join("")}
           </AvatarFallback>
         </Avatar>
@@ -120,11 +120,8 @@ export const NavUser = ({ user }: Props) => {
         </span>
       </div>
 
-      <div className="hidden sm:flex flex-col overflow-hidden">
+      <div className="hidden flex-col overflow-hidden sm:flex">
         <span className="text-sm font-semibold text-ellipsis">{user.name}</span>
-        <span className="text-xs text-muted-foreground text-ellipsis">
-          @{user.displayUsername}
-        </span>
       </div>
 
       <DropdownMenu>
@@ -132,7 +129,7 @@ export const NavUser = ({ user }: Props) => {
           <Button
             size="icon"
             variant="ghost"
-            className="rounded-full hidden sm:flex"
+            className="hidden rounded-full sm:flex"
           >
             <EllipsisIcon />
           </Button>
@@ -142,16 +139,16 @@ export const NavUser = ({ user }: Props) => {
           <DropdownMenuSeparator />
 
           <DropdownMenuItem onSelect={handleThemeChange}>
-            {theme === "dark" ? <MoonIcon /> : <SunIcon />}
+            {theme === "dark" ? <MoonIcon size={18} /> : <SunIcon size={18} />}
             Toggle theme
             <DropdownMenuShortcut>⌘⇧T</DropdownMenuShortcut>
           </DropdownMenuItem>
 
           <DropdownMenuItem variant="destructive" onSelect={handleSignOut}>
             {isSigningOut ? (
-              <LoaderIcon className="animate-spin" />
+              <LoaderIcon className="animate-spin" size={18} />
             ) : (
-              <LogOutIcon />
+              <LogOutIcon size={18} />
             )}
             Sign out
             <DropdownMenuShortcut>⌘O</DropdownMenuShortcut>

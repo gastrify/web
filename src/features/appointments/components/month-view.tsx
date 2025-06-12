@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import {
   addDays,
   eachDayOfInterval,
@@ -19,19 +19,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
+
+import {
+  EventGap,
+  EventHeight,
+  DefaultStartHour,
+} from "@/features/appointments/constants";
 import { DroppableCell } from "@/features/appointments/components/droppable-cell";
 import { DraggableEvent } from "@/features/appointments/components/draggable-event";
 import { EventItem } from "@/features/appointments/components/event-item";
 import { useEventVisibility } from "@/features/appointments/hooks/use-event-visibility";
-import {
-  getAllEventsForDay,
-  getEventsForDay,
-  getSpanningEventsForDay,
-  sortEvents,
-} from "@/features/appointments/utils/utils";
-import type { CalendarEvent } from "@/features/appointments/types/index";
-import { EventHeight, EventGap } from "@/features/appointments/utils/constants";
-import { DefaultStartHour } from "@/features/appointments/utils/constants";
+import type { CalendarEvent } from "@/features/appointments/types";
+import { getAllEventsForDay } from "@/features/appointments/utils/get-all-events-for-day";
+import { getEventsForDay } from "@/features/appointments/utils/get-events-for-day";
+import { getSpanningEventsForDay } from "@/features/appointments/utils/get-spanning-events-for-day";
+import { sortEvents } from "@/features/appointments/utils/sort-events";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -40,7 +42,7 @@ interface MonthViewProps {
   onEventCreate: (startTime: Date) => void;
 }
 
-export function MonthView({
+export const MonthView = memo(function MonthView({
   currentDate,
   events,
   onEventSelect,
@@ -77,10 +79,52 @@ export function MonthView({
     return result;
   }, [days]);
 
-  const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEventSelect(event);
-  };
+  // Memoize events by day to avoid repeated filtering
+  const eventsByDay = useMemo(() => {
+    const result = new Map<
+      string,
+      {
+        dayEvents: CalendarEvent[];
+        spanningEvents: CalendarEvent[];
+        allEvents: CalendarEvent[];
+        allDayEvents: CalendarEvent[];
+      }
+    >();
+
+    days.forEach((day) => {
+      const dayKey = day.toISOString().split("T")[0];
+      const dayEvents = getEventsForDay(events, day);
+      const spanningEvents = getSpanningEventsForDay(events, day);
+      const allEvents = getAllEventsForDay(events, day);
+      const allDayEvents = [...spanningEvents, ...dayEvents];
+
+      result.set(dayKey, {
+        dayEvents,
+        spanningEvents,
+        allEvents,
+        allDayEvents: sortEvents(allDayEvents), // Sort once here
+      });
+    });
+
+    return result;
+  }, [events, days]);
+
+  const handleEventClick = useCallback(
+    (event: CalendarEvent, e: React.MouseEvent) => {
+      e.stopPropagation();
+      onEventSelect(event);
+    },
+    [onEventSelect],
+  );
+
+  const handleCellClick = useCallback(
+    (day: Date) => {
+      const startTime = new Date(day);
+      startTime.setHours(DefaultStartHour, 0, 0);
+      onEventCreate(startTime);
+    },
+    [onEventCreate],
+  );
 
   const [isMounted, setIsMounted] = useState(false);
   const { contentRef, getVisibleEventCount } = useEventVisibility({
@@ -94,11 +138,11 @@ export function MonthView({
 
   return (
     <div data-slot="month-view" className="contents">
-      <div className="border-border/70 grid grid-cols-7 border-y uppercase">
+      <div className="border-border/70 grid grid-cols-7 border-b">
         {weekdays.map((day) => (
           <div
             key={day}
-            className="text-muted-foreground/70 py-2 text-center text-xs"
+            className="text-muted-foreground/70 py-2 text-center text-sm"
           >
             {day}
           </div>
@@ -111,16 +155,16 @@ export function MonthView({
             className="grid grid-cols-7 [&:last-child>*]:border-b-0"
           >
             {week.map((day, dayIndex) => {
-              if (!day) return null; // Skip if day is undefined
+              if (!day) return null;
 
-              const dayEvents = getEventsForDay(events, day);
-              const spanningEvents = getSpanningEventsForDay(events, day);
+              const dayKey = day.toISOString().split("T")[0];
+              const dayData = eventsByDay.get(dayKey);
+
+              if (!dayData) return null;
+
+              const { allDayEvents, allEvents } = dayData;
               const isCurrentMonth = isSameMonth(day, currentDate);
               const cellId = `month-cell-${day.toISOString()}`;
-              const allDayEvents = [...spanningEvents, ...dayEvents];
-              const allEvents = getAllEventsForDay(events, day);
-
-              const isReferenceCell = weekIndex === 0 && dayIndex === 0;
               const visibleCount = isMounted
                 ? getVisibleEventCount(allDayEvents.length)
                 : undefined;
@@ -130,6 +174,8 @@ export function MonthView({
               const remainingCount = hasMore
                 ? allDayEvents.length - visibleCount
                 : 0;
+
+              const isReferenceCell = weekIndex === 0 && dayIndex === 0;
 
               return (
                 <div
@@ -141,11 +187,7 @@ export function MonthView({
                   <DroppableCell
                     id={cellId}
                     date={day}
-                    onClick={() => {
-                      const startTime = new Date(day);
-                      startTime.setHours(DefaultStartHour, 0, 0);
-                      onEventCreate(startTime);
-                    }}
+                    onClick={() => handleCellClick(day)}
                   >
                     <div className="group-data-today:bg-primary group-data-today:text-primary-foreground mt-1 inline-flex size-6 items-center justify-center rounded-full text-sm">
                       {format(day, "d")}
@@ -168,9 +210,7 @@ export function MonthView({
                         if (!isFirstDay) {
                           return (
                             <div
-                              key={`spanning-${event.id}-${day
-                                .toISOString()
-                                .slice(0, 10)}`}
+                              key={`spanning-${event.id}-${day.toISOString().slice(0, 10)}`}
                               className="aria-hidden:hidden"
                               aria-hidden={isHidden ? "true" : undefined}
                             >
@@ -275,4 +315,4 @@ export function MonthView({
       </div>
     </div>
   );
-}
+});

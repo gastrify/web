@@ -29,10 +29,10 @@ export default async function GastrifyLayout({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="flex h-svh gap-6 px-2 py-4 sm:px-6 sm:py-8 md:p-10 overflow-hidden">
+      <div className="flex h-svh gap-6 overflow-auto px-2 py-4 sm:px-6 sm:py-8 md:p-10">
         <AppSidebar />
 
-        <main className="flex-1 h-full">{children}</main>
+        <main className="h-full flex-1">{children}</main>
       </div>
     </HydrationBoundary>
   );

@@ -1,8 +1,10 @@
 "use client";
 
 import { format } from "date-fns";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { CalendarEvent } from "@/features/appointments/types";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -12,90 +14,120 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { Label } from "@/shared/components/ui/label";
-import { useSession } from "@/shared/hooks/use-session";
-import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
+import { TypographyP } from "@/shared/components/ui/typography";
+
+import type { CalendarEvent } from "@/features/appointments/types";
 
 interface BookingDialogProps {
-  event: CalendarEvent | null;
+  event: CalendarEvent;
   isOpen: boolean;
   onClose: () => void;
-  onBook: (event: CalendarEvent) => void;
 }
 
-export function BookingDialog({
-  event,
-  isOpen,
-  onClose,
-  onBook,
-}: BookingDialogProps) {
-  const { data: session } = useSession();
+const bookingDialogFormSchema = z.object({
+  appointmentMethod: z.enum(["online", "in-person"]),
+});
 
-  if (!event) return null;
+type BookingDialogFormValues = z.infer<typeof bookingDialogFormSchema>;
 
-  // Check if the event is already booked by the current user
-  const isBookedByUser =
-    event.status === "booked" && event.userId === session?.user.id;
+export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
+  const form = useForm<BookingDialogFormValues>({
+    resolver: zodResolver(bookingDialogFormSchema),
+    defaultValues: {
+      appointmentMethod: "in-person",
+    },
+  });
 
-  const handleBook = () => {
-    const updatedEvent: CalendarEvent = {
-      ...event,
-      userId: session?.user.id || "",
-      status: "booked",
-    };
+  const onSubmit = (values: BookingDialogFormValues) => {
+    console.log(values);
 
-    onBook(updatedEvent);
-    onClose();
-
-    toast.success("Appointment booked successfully");
+    // form.reset();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            {isBookedByUser ? "Your Appointment" : "Book Appointment"}
-          </DialogTitle>
-          <DialogDescription>
-            {isBookedByUser
-              ? "This is your booked appointment"
-              : "Book this available time slot for your appointment"}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label>Date & Time</Label>
-            <div className="text-sm text-muted-foreground">
-              {format(new Date(event.start), "EEEE, MMMM d, yyyy")}
-              <br />
-              {format(new Date(event.start), "h:mm a")} -{" "}
-              {format(new Date(event.end), "h:mm a")}
-            </div>
-          </div>
+    <Form {...form}>
+      <form id="event-dialog-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Book Appointment</DialogTitle>
 
-          {isBookedByUser && (
-            // Show booked appointment details
-            <div className="grid gap-2">
-              <Label>Appointment Details</Label>
-              <div className="text-sm text-muted-foreground">
-                <div className="font-medium">{event.title}</div>
-                {event.description && (
-                  <div className="mt-1">{event.description}</div>
-                )}
+              <DialogDescription className="sr-only">
+                Book an appointment for this date
+              </DialogDescription>
+            </DialogHeader>
+
+            {event && (
+              <div className="flex flex-col gap-4">
+                <TypographyP>
+                  <span className="font-bold">Date:</span>{" "}
+                  {format(event.start, "PPpp")}
+                </TypographyP>
+                {/* <TypographyP>
+                Appointment method: {event?.appointmentMethod}
+              </TypographyP> */}
               </div>
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {isBookedByUser ? "Close" : "Cancel"}
-          </Button>
-          {!isBookedByUser && (
-            <Button onClick={handleBook}>Book Appointment</Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            )}
+
+            <FormField
+              control={form.control}
+              name="appointmentMethod"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-4">
+                  <FormLabel>Appointment Method</FormLabel>
+
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex"
+                    >
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="online" />
+                        </FormControl>
+
+                        <FormLabel className="font-normal">Online</FormLabel>
+                      </FormItem>
+
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="in-person" />
+                        </FormControl>
+
+                        <FormLabel className="font-normal">In-person</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="flex-row sm:justify-between">
+              <div className="flex flex-1 justify-end gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+
+                <Button type="submit" form="event-dialog-form">
+                  Book Appointment
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </form>
+    </Form>
   );
 }

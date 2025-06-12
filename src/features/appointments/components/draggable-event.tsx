@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, memo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { differenceInDays } from "date-fns";
 
-import { useCalendarDnd } from "@/features/appointments/providers/calendar-dnd-provider";
-import type { CalendarEvent } from "@/features/appointments/types/index";
+import { useIsAdmin } from "@/shared/hooks/is-admin";
+
 import { EventItem } from "@/features/appointments/components/event-item";
+import { useCalendarDnd } from "@/features/appointments/providers/calendar-dnd-provider";
+import type { CalendarEvent } from "@/features/appointments/types";
 
 interface DraggableEventProps {
   event: CalendarEvent;
@@ -22,7 +24,7 @@ interface DraggableEventProps {
   "aria-hidden"?: boolean | "true" | "false";
 }
 
-export function DraggableEvent({
+export const DraggableEvent = memo(function DraggableEvent({
   event,
   view,
   showTime,
@@ -40,6 +42,7 @@ export function DraggableEvent({
     x: number;
     y: number;
   } | null>(null);
+  const isAdmin = useIsAdmin();
 
   // Check if this is a multi-day event
   const eventStart = new Date(event.start);
@@ -49,6 +52,7 @@ export function DraggableEvent({
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
+      disabled: !isAdmin,
       id: `${event.id}-${view}`,
       data: {
         event,
@@ -136,4 +140,4 @@ export function DraggableEvent({
       />
     </div>
   );
-}
+});
