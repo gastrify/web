@@ -10,7 +10,7 @@
 cp .env.example .env.local
 ```
 
-3. Start the PostgreSQL database (development mode)
+3. Start the PostgreSQL database (development branch)
 
 ```bash
 docker-compose up -d
@@ -19,7 +19,7 @@ docker-compose up -d
 This will start the PostgreSQL database service. The database connection URL is:
 
 ```
-DATABASE_URL=postgresql://gastrify_user:gastrify_password@localhost:5432/gastrify
+DATABASE_URL=postgres://neon:npg@localhost:5432/neondb
 ```
 
 Make sure to add this to your `.env.local` file.

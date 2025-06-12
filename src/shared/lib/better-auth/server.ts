@@ -3,7 +3,6 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import {
-  username,
   magicLink,
   twoFactor,
   haveIBeenPwned,
@@ -52,7 +51,6 @@ export const auth = betterAuth({
   },
   plugins: [
     nextCookies(),
-    username(),
     magicLink({
       disableSignUp: true,
       sendMagicLink: async ({ email, url }) => {
@@ -83,13 +81,10 @@ export const auth = betterAuth({
   ],
   user: {
     additionalFields: {
-      followerCount: {
-        type: "number",
-        defaultValue: 0,
-      },
-      followingCount: {
-        type: "number",
-        defaultValue: 0,
+      identificationNumber: {
+        type: "string",
+        required: true,
+        unique: true,
       },
     },
     changeEmail: {

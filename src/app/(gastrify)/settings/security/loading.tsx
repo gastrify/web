@@ -18,7 +18,7 @@ export default function Loading() {
         <TypographyH4>Change password</TypographyH4>
 
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-2 items-center justify-start">
+          <div className="flex flex-wrap items-center justify-start gap-2">
             <span className="text-sm font-medium">New password</span>
             <Input
               disabled
@@ -28,7 +28,7 @@ export default function Loading() {
             />
           </div>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             If you change your password, all your active sessions will be logged
             out.
           </p>
@@ -39,7 +39,7 @@ export default function Loading() {
         <div className="flex flex-row items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
             <span className="text-base">Enable 2FA</span>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Add an extra layer of security to your account.
             </p>
           </div>
@@ -49,14 +49,14 @@ export default function Loading() {
         <TypographyH4>Backup codes</TypographyH4>
 
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-4 items-center justify-start">
+          <div className="flex flex-wrap items-center justify-start gap-4">
             <span className="text-sm font-medium">Generate backup codes</span>
             <Button disabled type="button" size="sm" variant="outline">
               Generate
             </Button>
           </div>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Generate a set of backup codes to use if you lose your authenticator
             app. If you already have backup codes, this will generate a new set
             and invalidate the old.

@@ -34,7 +34,7 @@ export function ResetPasswordForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="border-none bg-background shadow-none">
+      <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
             <TypographyH1>Reset password</TypographyH1>
@@ -42,8 +42,7 @@ export function ResetPasswordForm({
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Please enter your new password to regain access to your account
-              🔐.
+              Please enter your new password 🔐.
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -61,7 +60,7 @@ export function ResetPasswordForm({
                     <div className="relative">
                       <FormControl>
                         <Input
-                          className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           disabled={isPending}
                           type="password"
                           placeholder={
@@ -103,7 +102,7 @@ export function ResetPasswordForm({
                     <div className="relative">
                       <FormControl>
                         <Input
-                          className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                          className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                           disabled={isPending}
                           type="password"
                           placeholder={

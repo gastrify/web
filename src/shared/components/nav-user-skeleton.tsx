@@ -2,7 +2,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export const NavUserSkeleton = () => {
   return (
-    <div className="w-full flex flex-wrap items-center gap-4">
+    <div className="flex w-full flex-wrap items-center gap-4">
       <div className="relative">
         <Skeleton className="size-10 rounded-full">
           <span className="sr-only">Avatar loading</span>
@@ -12,16 +12,13 @@ export const NavUserSkeleton = () => {
         </span>
       </div>
 
-      <div className="hidden sm:flex flex-col gap-1">
+      <div className="hidden flex-col gap-1 sm:flex">
         <Skeleton className="h-4 w-24">
           <span className="sr-only">Name loading</span>
         </Skeleton>
-        <Skeleton className="h-3 w-20">
-          <span className="sr-only">Username loading</span>
-        </Skeleton>
       </div>
 
-      <Skeleton className="size-9 rounded-full hidden sm:flex">
+      <Skeleton className="hidden size-9 rounded-full sm:flex">
         <span className="sr-only">Menu button loading</span>
       </Skeleton>
     </div>

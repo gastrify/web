@@ -33,7 +33,7 @@ export const GenerateBackupCodesForm = () => {
               name="generateBackupCodes"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex flex-wrap gap-4 items-center justify-start">
+                  <div className="flex flex-wrap items-center justify-start gap-4">
                     <FormLabel>Generate backup codes</FormLabel>
 
                     <FormControl>
@@ -65,7 +65,7 @@ export const GenerateBackupCodesForm = () => {
               control={form.control}
               name="currentPassword"
               render={({ field }) => (
-                <FormItem className="bg-destructive/40 flex flex-col items-start rounded-lg p-4 gap-4">
+                <FormItem className="bg-destructive/40 flex flex-col items-start gap-4 rounded-lg p-4">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Password</FormLabel>
 

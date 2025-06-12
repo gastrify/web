@@ -15,9 +15,10 @@ export default function NotificationsPage() {
     <main className="flex flex-col gap-6">
       <TypographyH1>Notifications</TypographyH1>
 
-      <div className="relative mx-auto w-full max-w-sm aspect-square">
+      <div className="relative mx-auto aspect-square w-full max-w-sm">
         <Image src="/coming-soon.svg" alt="Coming soon" fill />
       </div>
+
       <TypographyMuted className="text-center">Coming soon...</TypographyMuted>
     </main>
   );

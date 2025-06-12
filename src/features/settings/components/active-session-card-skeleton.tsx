@@ -12,7 +12,7 @@ export const ActiveSessionCardSkeleton = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex justify-between items-center gap-2">
+        <CardTitle className="flex items-center justify-between gap-2">
           <Skeleton className="h-6 w-24" />
           <Skeleton className="h-5 w-16" />
         </CardTitle>
@@ -22,7 +22,7 @@ export const ActiveSessionCardSkeleton = () => {
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="text-sm flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 text-sm">
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-4 w-32" />

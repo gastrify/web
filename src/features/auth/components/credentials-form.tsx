@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LoaderIcon, LockIcon, User2Icon } from "lucide-react";
+import { LoaderIcon, LockIcon, MailIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -28,18 +28,19 @@ export function CredentialsForm() {
       >
         <FormField
           control={form.control}
-          name="username"
+          name="email"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Email</FormLabel>
 
               <div className="relative">
                 <FormControl>
                   <Input
-                    className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                    className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
+                    type="email"
                     disabled={isPending}
                     placeholder={
-                      fieldState.invalid ? undefined : "davidaragundy"
+                      fieldState.invalid ? undefined : "david@aragundy.com"
                     }
                     {...field}
                   />
@@ -54,7 +55,7 @@ export function CredentialsForm() {
                       "text-foreground",
                   )}
                 >
-                  <User2Icon size={16} aria-hidden="true" />
+                  <MailIcon size={16} aria-hidden="true" />
                 </div>
               </div>
 
@@ -68,12 +69,12 @@ export function CredentialsForm() {
           name="password"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>
+              <FormLabel className="flex items-center justify-between">
                 Password
                 <Link
                   prefetch
                   href="/forgot-password"
-                  className="ml-auto text-xs text-foreground underline-offset-4 hover:underline"
+                  className="text-foreground text-xs underline-offset-4 hover:underline"
                 >
                   Forgot your password?
                 </Link>
@@ -82,7 +83,7 @@ export function CredentialsForm() {
               <div className="relative">
                 <FormControl>
                   <Input
-                    className="peer ps-9 not-aria-invalid:border-none shadow-none aria-invalid:text-destructive-foreground"
+                    className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                     disabled={isPending}
                     type="password"
                     placeholder={fieldState.invalid ? undefined : "••••••••"}

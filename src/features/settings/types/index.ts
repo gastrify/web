@@ -3,7 +3,7 @@ import { z } from "zod";
 import { notificationsFormSchema } from "@/features/settings/schemas/notifications-form-schema";
 
 import { changeNameFormSchema } from "@/features/settings/schemas/change-name-form-schema";
-import { changeUsernameFormSchema } from "@/features/settings/schemas/change-username-form-schema";
+import { changeIdentificationNumberFormSchema } from "@/features/settings/schemas/change-identification-number-form-schema";
 import { changeEmailFormSchema } from "@/features/settings/schemas/change-email-form-schema";
 
 import { changePasswordFormSchema } from "@/features/settings/schemas/change-password-form-schema";
@@ -13,7 +13,9 @@ import { generateBackupCodesFormSchema } from "@/features/settings/schemas/gener
 export type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
 
 export type ChangeNameFormValues = z.infer<typeof changeNameFormSchema>;
-export type ChangeUsernameFormValues = z.infer<typeof changeUsernameFormSchema>;
+export type ChangeIdentificationNumberFormValues = z.infer<
+  typeof changeIdentificationNumberFormSchema
+>;
 export type ChangeEmailFormValues = z.infer<typeof changeEmailFormSchema>;
 
 export type ChangePasswordFormValues = z.infer<typeof changePasswordFormSchema>;

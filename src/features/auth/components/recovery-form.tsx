@@ -32,7 +32,7 @@ export function RecoveryForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="border-none bg-background shadow-none">
+      <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
             <TypographyH1>Recovery code 🔐</TypographyH1>

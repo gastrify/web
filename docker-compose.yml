@@ -1,34 +1,9 @@
-version: "3.8"
-
 services:
-  # PostgreSQL Database Service
-  postgres:
-    image: postgres:latest
-    container_name: gastrify-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: gastrify
-      POSTGRES_USER: gastrify_user
-      POSTGRES_PASSWORD: gastrify_password
-      PGDATA: /var/lib/postgresql/data/pgdata
+  db:
+    image: neondatabase/neon_local:latest
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - gastrify-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gastrify_user -d gastrify"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-# Named volumes for data persistence
-volumes:
-  postgres_data:
-    driver: local
-
-# Custom network for service communication
-networks:
-  gastrify-network:
-    driver: bridge
+    environment:
+      NEON_API_KEY: ${NEON_API_KEY}
+      NEON_PROJECT_ID: ${NEON_PROJECT_ID}
+      DRIVER: serverless

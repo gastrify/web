@@ -4,17 +4,19 @@ import { getUser } from "@/shared/actions/get-user";
 
 interface Props {
   id?: string;
-  username?: string;
+  identificationNumber?: string;
 }
 
-export const useUser = ({ id, username }: Props) => {
-  if (!id && !username)
-    throw new Error("Either id or username is required in useUser");
+export const useUser = ({ id, identificationNumber }: Props) => {
+  if (!id && !identificationNumber)
+    throw new Error(
+      "Either id or identification number is required in useUser",
+    );
 
   return useQuery({
-    queryKey: ["user", "detail", id, username],
+    queryKey: ["user", "detail", id, identificationNumber],
     queryFn: async () => {
-      const { data, error } = await getUser({ id, username });
+      const { data, error } = await getUser({ id, identificationNumber });
 
       if (error) throw new Error(error.message);
 

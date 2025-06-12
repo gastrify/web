@@ -1,6 +1,5 @@
 "use client";
 
-import { TypographyLarge } from "@/shared/components/ui/typography";
 import { NavLink } from "@/shared/components/nav-link";
 import { NavUser } from "@/shared/components/nav-user";
 import { useAppSidebar } from "@/shared/hooks/use-app-sidebar";
@@ -21,12 +20,12 @@ export const AppSidebar = () => {
   } = useAppSidebar();
 
   return (
-    <div className="flex flex-col items-center md:items-stretch gap-4">
-      <TypographyLarge className="font-extrabold text-4xl">
-        G<span className="hidden md:inline">astrify</span>
-      </TypographyLarge>
+    <div className="flex flex-col items-center gap-4 md:items-stretch">
+      <div className="bg-accent flex aspect-square flex-wrap place-content-center self-start rounded-full p-2 text-4xl font-extrabold lg:text-5xl">
+        G
+      </div>
 
-      <nav className="flex flex-col items-start md:items-stretch gap-2">
+      <nav className="flex flex-col items-start gap-2 md:items-stretch">
         {links.map((link) => (
           <NavLink
             key={link.href}

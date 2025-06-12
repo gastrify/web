@@ -1,6 +1,5 @@
 import { createAuthClient } from "better-auth/react";
 import {
-  usernameClient,
   magicLinkClient,
   twoFactorClient,
   inferAdditionalFields,
@@ -12,7 +11,6 @@ import { auth } from "@/shared/lib/better-auth/server";
 
 export const authClient = createAuthClient({
   plugins: [
-    usernameClient(),
     magicLinkClient(),
     twoFactorClient(),
     adminClient(),

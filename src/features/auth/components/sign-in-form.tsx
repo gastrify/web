@@ -37,7 +37,7 @@ export function SignInForm({
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Welcome back! 👋 Please sign in to your account.
+              Welcome back 👋
             </TypographyP>
           </CardDescription>
         </CardHeader>

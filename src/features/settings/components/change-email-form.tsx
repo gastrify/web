@@ -46,10 +46,10 @@ export function ChangeEmailForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-wrap gap-2 items-center justify-start">
+              <div className="flex flex-wrap items-center justify-start gap-2">
                 <FormLabel>Email</FormLabel>
 
-                {isSessionLoading && <Skeleton className="w-[200px] h-8" />}
+                {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
                 {isSessionError && (
                   <Button
@@ -67,7 +67,7 @@ export function ChangeEmailForm() {
                 )}
 
                 {isSessionSuccess && (
-                  <FormControl className="flex-1 sm:flex-none sm:w-fit">
+                  <FormControl className="flex-1 sm:w-fit sm:flex-none">
                     <Input placeholder="david@aragundy.com" {...field} />
                   </FormControl>
                 )}
@@ -87,7 +87,7 @@ export function ChangeEmailForm() {
                 )}
               </div>
 
-              <FormDescription className="text-sm text-muted-foreground">
+              <FormDescription className="text-muted-foreground text-sm">
                 This is the email address we will use to contact you. It will
                 not be publicly visible.
               </FormDescription>

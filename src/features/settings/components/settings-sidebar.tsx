@@ -31,7 +31,7 @@ export function SettingsSidebar() {
   if (isMobile && !isSettingsPage) return null;
 
   return (
-    <aside className="w-full md:w-max h-full">
+    <aside className="h-full w-full md:w-max">
       <nav className="flex flex-col gap-2">
         {items.map((item) => (
           <SettingsNavLink
