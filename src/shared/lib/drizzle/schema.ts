@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -60,4 +60,28 @@ export const twoFactor = pgTable("two_factor", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const appointmentTypeEnum = pgEnum("appointment_type", [
+  "in-person",
+  "virtual",
+]);
+
+export const appointmentStatusEnum = pgEnum("appointment_status", [
+  "available",
+  "booked",
+]);
+
+export const appointment = pgTable("appointment", {
+  id: text("id").primaryKey(),
+  start: timestamp("start", { mode: "date" }).notNull(),
+  end: timestamp("end", { mode: "date" }).notNull(),
+  status: appointmentStatusEnum("status").notNull(),
+  patientId: text("patient_id").references(() => user.id, {
+    onDelete: "cascade",
+  }),
+  type: appointmentTypeEnum("type"),
+  meetingLink: text("meeting_link"),
+  location: text("location"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });

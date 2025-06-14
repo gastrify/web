@@ -135,8 +135,6 @@ export const EventItem = memo(function EventItem({
   }, [displayStart, displayEnd]);
 
   const getEventTime = () => {
-    if (event.allDay) return "All day";
-
     // For short events (less than 45 minutes), only show start time
     if (durationMinutes < 45) {
       return formatTimeWithOptionalMinutes(displayStart);
@@ -164,16 +162,7 @@ export const EventItem = memo(function EventItem({
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
-        {children || (
-          <span className="truncate">
-            {!event.allDay && (
-              <span className="truncate font-normal opacity-70 sm:text-[11px]">
-                {formatTimeWithOptionalMinutes(displayStart)}{" "}
-              </span>
-            )}
-            {event.title}
-          </span>
-        )}
+        {children || <span className="truncate">{event.title}</span>}
       </EventWrapper>
     );
   }
@@ -238,24 +227,11 @@ export const EventItem = memo(function EventItem({
     >
       <div className="text-sm font-medium">{event.title}</div>
       <div className="text-xs opacity-70">
-        {event.allDay ? (
-          <span>All day</span>
-        ) : (
-          <span className="uppercase">
-            {formatTimeWithOptionalMinutes(displayStart)} -{" "}
-            {formatTimeWithOptionalMinutes(displayEnd)}
-          </span>
-        )}
-        {event.location && (
-          <>
-            <span className="px-1 opacity-35"> · </span>
-            <span>{event.location}</span>
-          </>
-        )}
+        <span className="uppercase">
+          {formatTimeWithOptionalMinutes(displayStart)} -{" "}
+          {formatTimeWithOptionalMinutes(displayEnd)}
+        </span>
       </div>
-      {event.description && (
-        <div className="my-1 text-xs opacity-90">{event.description}</div>
-      )}
     </button>
   );
 });

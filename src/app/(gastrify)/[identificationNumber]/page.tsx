@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage({}: {
-  params: Promise<{ username: string }>;
+  params: Promise<{ identificationNumber: string }>;
 }) {
-  // const { username } = await params;
+  // const { identificationNumber } = await params;
 
   return (
     <div className="flex flex-col gap-6">

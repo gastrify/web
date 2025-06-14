@@ -48,7 +48,7 @@ export const DraggableEvent = memo(function DraggableEvent({
   const eventStart = new Date(event.start);
   const eventEnd = new Date(event.end);
   const isMultiDayEvent =
-    isMultiDay || event.allDay || differenceInDays(eventEnd, eventStart) >= 1;
+    isMultiDay || differenceInDays(eventEnd, eventStart) >= 1;
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({

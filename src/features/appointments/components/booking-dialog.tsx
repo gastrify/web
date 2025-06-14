@@ -1,9 +1,9 @@
 "use client";
 
-import { format } from "date-fns";
+import { format, formatDuration, intervalToDuration } from "date-fns";
 import { useForm } from "react-hook-form";
-import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { LoaderIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -24,8 +24,14 @@ import {
 } from "@/shared/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { TypographyP } from "@/shared/components/ui/typography";
+import { useSession } from "@/shared/hooks/use-session";
 
-import type { CalendarEvent } from "@/features/appointments/types";
+import { useBookAppointmentMutation } from "@/features/appointments/hooks/use-book-appointment-mutation";
+import { bookAppointmentSchema } from "@/features/appointments/schemas/book-appointment-schema";
+import type {
+  BookAppointmentValues,
+  CalendarEvent,
+} from "@/features/appointments/types";
 
 interface BookingDialogProps {
   event: CalendarEvent;
@@ -33,25 +39,27 @@ interface BookingDialogProps {
   onClose: () => void;
 }
 
-const bookingDialogFormSchema = z.object({
-  appointmentMethod: z.enum(["online", "in-person"]),
-});
-
-type BookingDialogFormValues = z.infer<typeof bookingDialogFormSchema>;
-
 export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
-  const form = useForm<BookingDialogFormValues>({
-    resolver: zodResolver(bookingDialogFormSchema),
-    defaultValues: {
-      appointmentMethod: "in-person",
+  const { data: session } = useSession();
+
+  const form = useForm<BookAppointmentValues>({
+    resolver: zodResolver(bookAppointmentSchema),
+    values: {
+      appointmentId: event.id,
+      patientId: session?.user.id ?? "",
+      appointmentType: "in-person",
     },
   });
 
-  const onSubmit = (values: BookingDialogFormValues) => {
-    console.log(values);
+  const { mutate, isPending } = useBookAppointmentMutation();
 
-    // form.reset();
-  };
+  const onSubmit = (values: BookAppointmentValues) =>
+    mutate(values, {
+      onSuccess: () => {
+        form.reset();
+        onClose();
+      },
+    });
 
   return (
     <Form {...form}>
@@ -66,21 +74,30 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
               </DialogDescription>
             </DialogHeader>
 
-            {event && (
-              <div className="flex flex-col gap-4">
-                <TypographyP>
-                  <span className="font-bold">Date:</span>{" "}
-                  {format(event.start, "PPpp")}
+            <div className="flex gap-4">
+              <div className="flex flex-1 flex-col gap-2">
+                <span className="text-sm font-medium">Date</span>
+                <TypographyP className="!m-0 text-sm leading-normal font-normal">
+                  {format(event.start, "PPp")}
                 </TypographyP>
-                {/* <TypographyP>
-                Appointment method: {event?.appointmentMethod}
-              </TypographyP> */}
               </div>
-            )}
+
+              <div className="flex flex-1 flex-col gap-2">
+                <span className="text-sm font-medium">Duration</span>
+                <TypographyP className="!m-0 text-sm leading-normal font-normal">
+                  {formatDuration(
+                    intervalToDuration({
+                      start: event.start,
+                      end: event.end,
+                    }),
+                  )}
+                </TypographyP>
+              </div>
+            </div>
 
             <FormField
               control={form.control}
-              name="appointmentMethod"
+              name="appointmentType"
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-4">
                   <FormLabel>Appointment Method</FormLabel>
@@ -93,18 +110,18 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
                     >
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
-                          <RadioGroupItem value="online" />
-                        </FormControl>
-
-                        <FormLabel className="font-normal">Online</FormLabel>
-                      </FormItem>
-
-                      <FormItem className="flex items-center gap-3">
-                        <FormControl>
                           <RadioGroupItem value="in-person" />
                         </FormControl>
 
                         <FormLabel className="font-normal">In-person</FormLabel>
+                      </FormItem>
+
+                      <FormItem className="flex items-center gap-3">
+                        <FormControl>
+                          <RadioGroupItem value="virtual" />
+                        </FormControl>
+
+                        <FormLabel className="font-normal">Virtual</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -120,7 +137,12 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
                   Cancel
                 </Button>
 
-                <Button type="submit" form="event-dialog-form">
+                <Button
+                  type="submit"
+                  form="event-dialog-form"
+                  disabled={isPending}
+                >
+                  {isPending && <LoaderIcon className="animate-spin" />}
                   Book Appointment
                 </Button>
               </div>

@@ -76,7 +76,7 @@ export const WeekView = memo(function WeekView({
   // Pre-filter and cache events to avoid repeated filtering
   const { allDayEvents, eventsByDay } = useMemo(() => {
     const allDay = events
-      .filter((event) => event.allDay || isMultiDayEvent(event))
+      .filter((event) => isMultiDayEvent(event))
       .filter((event) => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
@@ -94,7 +94,7 @@ export const WeekView = memo(function WeekView({
       const dayKey = day.toISOString().split("T")[0];
       // Get events for this day that are not all-day events or multi-day events
       const dayEvents = events.filter((event) => {
-        if (event.allDay || isMultiDayEvent(event)) return false;
+        if (isMultiDayEvent(event)) return false;
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
         return (

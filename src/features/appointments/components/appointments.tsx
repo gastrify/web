@@ -1,39 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
+import { getAllAppointments } from "@/features/appointments/actions/get-all-appointments";
 import { EventCalendar } from "@/features/appointments/components/event-calendar";
-import type { CalendarEvent } from "@/features/appointments/types";
-
-//TODO: Remove this
-import { mockEvents } from "../mock-events";
 
 export function Appointments() {
-  const [events, setEvents] = useState<CalendarEvent[]>(mockEvents);
+  const { data, isError } = useQuery({
+    queryKey: ["appointments"],
+    queryFn: async () => {
+      const { data, error } = await getAllAppointments();
 
-  const handleEventAdd = (event: CalendarEvent) => {
-    setEvents([...events, event]);
-  };
+      if (error) return Promise.reject(error);
 
-  const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-    setEvents(
-      events.map((event) =>
-        event.id === updatedEvent.id ? updatedEvent : event,
-      ),
-    );
-  };
+      return data;
+    },
+  });
 
-  const handleEventDelete = (eventId: string) => {
-    setEvents(events.filter((event) => event.id !== eventId));
-  };
+  if (isError)
+    toast.error("Something went wrong fetching appointments", {
+      description: "Please try again later",
+    });
 
-  return (
-    <EventCalendar
-      initialView="week"
-      events={events}
-      onEventAdd={handleEventAdd}
-      onEventUpdate={handleEventUpdate}
-      onEventDelete={handleEventDelete}
-    />
-  );
+  return <EventCalendar initialView="agenda" events={data} />;
 }
