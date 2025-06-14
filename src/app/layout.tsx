@@ -13,6 +13,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={GeistSans.className}>
+      <head>
+        <script async src="https://unpkg.com/react-scan/dist/auto.global.js" />
+      </head>
       <body>
         <Providers>{children}</Providers>
 

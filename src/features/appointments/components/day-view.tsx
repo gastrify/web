@@ -77,7 +77,7 @@ export function DayView({
   const allDayEvents = useMemo(() => {
     return dayEvents.filter((event) => {
       // Include explicitly marked all-day events or multi-day events
-      return event.allDay || isMultiDayEvent(event);
+      return isMultiDayEvent(event);
     });
   }, [dayEvents]);
 
@@ -85,7 +85,7 @@ export function DayView({
   const timeEvents = useMemo(() => {
     return dayEvents.filter((event) => {
       // Exclude all-day events and multi-day events
-      return !event.allDay && !isMultiDayEvent(event);
+      return !isMultiDayEvent(event);
     });
   }, [dayEvents]);
 

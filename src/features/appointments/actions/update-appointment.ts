@@ -1,186 +1,200 @@
 "use server";
 
-import { db } from "@/shared/lib/drizzle/server";
-import { appointment } from "@/shared/lib/drizzle/schema";
-import { appointmentSchema } from "./helpers/validation";
-import { Appointment } from "./helpers/appointment";
-import { ActionResponse, User } from "@/shared/types";
-import { auth } from "@/shared/lib/better-auth/server";
-import { checkIsAdmin } from "@/shared/utils/check-role";
-import { and, eq, gt, gte, lt, lte, or, ne } from "drizzle-orm";
 import { headers } from "next/headers";
+import { and, eq, gte, lte, ne } from "drizzle-orm";
 
-type ErrorCode =
+import { auth } from "@/shared/lib/better-auth/server";
+import { db } from "@/shared/lib/drizzle/server";
+import { appointment, user } from "@/shared/lib/drizzle/schema";
+import type { ActionResponse } from "@/shared/types";
+import { isAdmin } from "@/shared/utils/is-admin";
+import { tryCatch } from "@/shared/utils/try-catch";
+
+import type { UpdateAppointmentValues } from "@/features/appointments/types";
+import { updateAppointmentSchema } from "@/features/appointments/schemas/update-appointment-schema";
+
+export type UpdateAppointmentErrorCode =
   | "UNAUTHENTICATED"
   | "FORBIDDEN"
   | "INVALID_INPUT"
-  | "NOT_FOUND"
   | "CONFLICT"
-  | "TOO_LATE_TO_RESCHEDULE"
-  | "SERVER_ERROR";
+  | "INTERNAL_SERVER_ERROR"
+  | "USER_NOT_FOUND"
+  | "APPOINTMENT_NOT_FOUND";
 
 export async function updateAppointment(
-  id: string,
-  form_data: FormData,
-): Promise<ActionResponse<{ id: string }, ErrorCode>> {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+  values: UpdateAppointmentValues,
+): Promise<ActionResponse<null, UpdateAppointmentErrorCode>> {
+  //get the session and check if the user is authenticated
 
-    if (!session) {
-      return {
-        error: { code: "UNAUTHENTICATED", message: "User not authenticated" },
-        data: null,
-      };
-    }
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-    const is_admin = checkIsAdmin(session.user as User);
-
-    const existing_appointment = await db.query.appointment.findFirst({
-      where: eq(appointment.id, id),
-      columns: {
-        id: true,
-        user_id: true,
-        start_time: true,
-        end_time: true,
-      },
-    });
-
-    if (!existing_appointment) {
-      return {
-        error: { code: "NOT_FOUND", message: "Appointment not found" },
-        data: null,
-      };
-    }
-
-    if (!is_admin) {
-      if (existing_appointment.user_id !== session.user.id) {
-        return {
-          error: {
-            code: "FORBIDDEN",
-            message: "Patients can only edit their own appointments",
-          },
-          data: null,
-        };
-      }
-
-      if (!existing_appointment.start_time) {
-        return {
-          error: {
-            code: "SERVER_ERROR",
-            message: "Appointment start time is missing",
-          },
-          data: null,
-        };
-      }
-
-      const appointment_date = new Date(existing_appointment.start_time);
-      const now = new Date();
-      const hoursDifference =
-        (appointment_date.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-      if (hoursDifference < 12) {
-        return {
-          error: {
-            code: "TOO_LATE_TO_RESCHEDULE",
-            message:
-              "Appointments can only be rescheduled at least 12 hours in advance",
-          },
-          data: null,
-        };
-      }
-    }
-
-    const raw_data = {
-      user_id: form_data.get("user_id") as string,
-      start_time: new Date(form_data.get("start_time") as string),
-      end_time: new Date(form_data.get("end_time") as string),
-      type: form_data.get("type") as "virtual" | "in-person",
-      link: (() => {
-        const link_value = form_data.get("link");
-        if (!link_value || link_value === "") return undefined;
-        return link_value as string;
-      })(),
-    };
-
-    const validation = appointmentSchema.safeParse(raw_data);
-    if (!validation.success) {
-      return {
-        error: {
-          code: "INVALID_INPUT",
-          message: `Invalid data: ${validation.error.errors.map((e) => e.message).join(", ")}`,
-        },
-        data: null,
-      };
-    }
-
-    const validated_data = validation.data;
-
-    if (validated_data.type === "virtual" && !validated_data.link) {
-      return {
-        error: {
-          code: "INVALID_INPUT",
-          message: "Virtual appointments require a meeting link",
-        },
-        data: null,
-      };
-    }
-
-    if (!is_admin) {
-      if (validated_data.user_id !== session.user.id) {
-        return {
-          error: {
-            code: "FORBIDDEN",
-            message: "Patients cannot change appointment to another user",
-          },
-          data: null,
-        };
-      }
-    }
-
-    const overlapping = await db.query.appointment.findMany({
-      where: and(
-        ne(appointment.id, id),
-        or(
-          and(
-            gte(appointment.start_time, validated_data.start_time),
-            lt(appointment.start_time, validated_data.end_time),
-          ),
-          and(
-            gt(appointment.end_time, validated_data.start_time),
-            lte(appointment.end_time, validated_data.end_time),
-          ),
-          and(
-            lte(appointment.start_time, validated_data.start_time),
-            gte(appointment.end_time, validated_data.end_time),
-          ),
-        ),
-      ),
-    });
-
-    if (overlapping.length > 0) {
-      return {
-        error: {
-          code: "CONFLICT",
-          message: "An appointment already exists at this time",
-        },
-        data: null,
-      };
-    }
-
-    const updated_appointment = new Appointment({ ...validated_data, id });
-    await db
-      .update(appointment)
-      .set(updated_appointment.toObject())
-      .where(eq(appointment.id, id));
-
-    return { data: { id }, error: null };
-  } catch (error) {
-    console.error("Error al listar citas:", error);
+  if (!session) {
     return {
-      error: { code: "SERVER_ERROR", message: "Error interno del servidor" },
       data: null,
+      error: { code: "UNAUTHENTICATED", message: "User not authenticated" },
     };
   }
+
+  //check if the user is an admin
+
+  if (!isAdmin(session.user)) {
+    return {
+      data: null,
+      error: {
+        code: "FORBIDDEN",
+        message: "You are not authorized to create appointments",
+      },
+    };
+  }
+
+  //validate the values
+
+  const parsedValues = updateAppointmentSchema
+    .transform((data) => ({
+      ...data,
+      patientIdentificationNumber:
+        data.status === "booked" ? data.patientIdentificationNumber : undefined,
+      type: data.status === "booked" ? data.type : undefined,
+    }))
+    .safeParse(values);
+
+  if (!parsedValues.success) {
+    return {
+      data: null,
+      error: {
+        code: "INVALID_INPUT",
+        message: `Invalid data: ${parsedValues.error.errors.map((e) => e.message).join(", ")}`,
+      },
+    };
+  }
+
+  const { id, start, end, status, patientIdentificationNumber, type } =
+    parsedValues.data;
+
+  //check if the appointment exists
+
+  const { data: existingAppointment, error: existingAppointmentDbError } =
+    await tryCatch(db.select().from(appointment).where(eq(appointment.id, id)));
+
+  if (existingAppointmentDbError) {
+    console.error(existingAppointmentDbError);
+
+    return {
+      data: null,
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to check if appointment exists",
+      },
+    };
+  }
+
+  if (!existingAppointment || existingAppointment.length === 0) {
+    return {
+      data: null,
+      error: {
+        code: "APPOINTMENT_NOT_FOUND",
+        message: "Appointment not found",
+      },
+    };
+  }
+
+  //if booked, check if the patient exists and get the patient id
+
+  let patientId: string | null = null;
+
+  if (status === "booked" && patientIdentificationNumber) {
+    const { data: patient } = await tryCatch(
+      db
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.identificationNumber, patientIdentificationNumber)),
+    );
+
+    if (!patient || patient.length !== 1) {
+      return {
+        data: null,
+        error: {
+          code: "USER_NOT_FOUND",
+          message:
+            "The patient with the provided identification number was not found",
+        },
+      };
+    }
+
+    patientId = patient[0].id;
+  }
+
+  //TODO: check if patient does not have other appointments in the same time
+
+  //check conflicts with other appointments
+
+  const { data: dbCheckConflictsData, error: dbCheckConflictsError } =
+    await tryCatch(
+      db
+        .select({ id: appointment.id })
+        .from(appointment)
+        .where(
+          and(
+            gte(appointment.start, start),
+            lte(appointment.end, end),
+            ne(appointment.id, id),
+          ),
+        ),
+    );
+
+  if (dbCheckConflictsError) {
+    console.error(dbCheckConflictsError);
+
+    return {
+      data: null,
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to check conflicts",
+      },
+    };
+  }
+
+  if (dbCheckConflictsData && dbCheckConflictsData.length > 0)
+    return {
+      data: null,
+      error: {
+        code: "CONFLICT",
+        message: "The appointment conflicts with another appointment",
+      },
+    };
+
+  //all good, update the appointment
+
+  const { error: dbUpdateAppointmentError } = await tryCatch(
+    db
+      .update(appointment)
+      .set({
+        start,
+        end,
+        status,
+        patientId: status === "booked" ? patientId : null,
+        type: status === "booked" ? type : null,
+      })
+      .where(eq(appointment.id, id)),
+  );
+
+  if (dbUpdateAppointmentError) {
+    console.error(dbUpdateAppointmentError);
+
+    return {
+      data: null,
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update appointment",
+      },
+    };
+  }
+
+  return {
+    data: null,
+    error: null,
+  };
 }

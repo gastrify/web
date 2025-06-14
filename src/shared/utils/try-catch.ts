@@ -1,8 +1,8 @@
 export const tryCatch = async <T>(promise: Promise<T>) => {
   try {
     const data = await promise;
-    return { data };
+    return { data, error: null };
   } catch (error) {
-    return { error: error as Error };
+    return { data: null, error: error as Error };
   }
 };

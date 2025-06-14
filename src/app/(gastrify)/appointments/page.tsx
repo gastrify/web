@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
+import { auth } from "@/shared/lib/better-auth/server";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
-import { TypographyH1 } from "@/shared/components/ui/typography";
 
-import { Appointments } from "@/features/appointments/components/appointments";
+import { AdminAppointmentsPage } from "@/features/appointments/components/admin-appointments-page";
+import { UserAppointmentsPage } from "@/features/appointments/components/user-appointments-page";
 
 export const metadata: Metadata = {
   title: "Gastrify | Appointments",
 };
 
-export default function AppointmentsPage() {
+export default async function AppointmentsPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) redirect("/sign-in");
+
+  const isAdmin = session.user.role === "admin";
+
   return (
     <ScrollArea className="h-full">
-      <div className="flex h-full flex-col gap-6 pr-6">
-        <TypographyH1>Appointments</TypographyH1>
-
-        <Appointments />
-      </div>
+      {isAdmin ? <AdminAppointmentsPage /> : <UserAppointmentsPage />}
     </ScrollArea>
   );
 }

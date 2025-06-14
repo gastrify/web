@@ -222,14 +222,6 @@ export const MonthView = memo(function MonthView({
                                 isLastDay={isLastDay}
                               >
                                 <div className="invisible" aria-hidden={true}>
-                                  {!event.allDay && (
-                                    <span>
-                                      {format(
-                                        new Date(event.start),
-                                        "h:mm",
-                                      )}{" "}
-                                    </span>
-                                  )}
                                   {event.title}
                                 </div>
                               </EventItem>

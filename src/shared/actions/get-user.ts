@@ -43,7 +43,9 @@ export const getUser = async ({
       .limit(1),
   );
 
-  if (error)
+  if (error) {
+    console.error(error);
+
     return {
       data: null,
       error: {
@@ -51,6 +53,7 @@ export const getUser = async ({
         message: "Something went wrong while fetching the user data 😢",
       },
     };
+  }
 
   if (!data || data.length === 0)
     return {

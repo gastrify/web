@@ -41,9 +41,10 @@ import {
 import { AgendaView } from "@/features/appointments/components/agenda-view";
 import { BookingDialog } from "@/features/appointments/components/booking-dialog";
 import { DayView } from "@/features/appointments/components/day-view";
-import { EventDialog } from "@/features/appointments/components/event-dialog";
+import { CreateEventDialog } from "@/features/appointments/components/create-event-dialog";
 import { MonthView } from "@/features/appointments/components/month-view";
 import { WeekView } from "@/features/appointments/components/week-view";
+import { UpdateEventDialog } from "@/features/appointments/components/update-event-dialog";
 import { CalendarDndProvider } from "@/features/appointments/providers/calendar-dnd-provider";
 import type {
   CalendarEvent,
@@ -53,28 +54,28 @@ import { addMinutesToDate } from "@/features/appointments/utils/add-minutes-to-d
 
 export interface EventCalendarProps {
   events?: CalendarEvent[];
-  onEventAdd?: (event: CalendarEvent) => void;
-  onEventUpdate?: (event: CalendarEvent) => void;
-  onEventDelete?: (eventId: string) => void;
   className?: string;
   initialView?: CalendarView;
 }
 
 export function EventCalendar({
   events = [],
-  onEventAdd,
-  onEventUpdate,
-  onEventDelete,
   className,
   initialView = "month",
 }: EventCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>(initialView);
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+  const [createEventData, setCreateEventData] = useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null,
   );
   const isAdmin = useIsAdmin();
+
+  const isCreateEventDialogOpen = !!createEventData;
+  const isUpdateEventDialogOpen = !!selectedEvent;
 
   // Add keyboard shortcuts for view switching
   useEffect(() => {
@@ -82,7 +83,8 @@ export function EventCalendar({
       // Skip if user is typing in an input, textarea or contentEditable element
       // or if the event dialog is open
       if (
-        isEventDialogOpen ||
+        isCreateEventDialogOpen ||
+        isUpdateEventDialogOpen ||
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
         (e.target instanceof HTMLElement && e.target.isContentEditable)
@@ -111,7 +113,7 @@ export function EventCalendar({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isEventDialogOpen]);
+  }, [isCreateEventDialogOpen, isUpdateEventDialogOpen]);
 
   // Memoize navigation handlers
   const handlePrevious = useCallback(() => {
@@ -144,9 +146,9 @@ export function EventCalendar({
 
   const handleEventSelect = useCallback(
     (event: CalendarEvent) => {
-      if (!isAdmin && event.appointmentStatus !== "available") return;
+      if (!isAdmin && event.title !== "available") return;
+
       setSelectedEvent(event);
-      setIsEventDialogOpen(true);
     },
     [isAdmin],
   );
@@ -168,61 +170,15 @@ export function EventCalendar({
         startTime.setMilliseconds(0);
       }
 
-      const newEvent: CalendarEvent = {
-        id: "",
-        title: "",
+      setCreateEventData({
         start: startTime,
         end: addMinutesToDate(startTime, 15),
-        allDay: false,
-        appointmentStatus: "available",
-        patientIdentificationNumber: "",
-      };
-
-      setSelectedEvent(newEvent);
-      setIsEventDialogOpen(true);
+      });
     },
     [isAdmin],
   );
 
-  const handleEventSave = (event: CalendarEvent) => {
-    if (event.id) {
-      onEventUpdate?.(event);
-      // Show toast notification when an event is updated
-      toast.success(`Event "${event.title}" updated`, {
-        description: format(new Date(event.start), "MMM d, yyyy"),
-      });
-    } else {
-      onEventAdd?.({
-        ...event,
-        //TODO: Generate a unique ID for the event
-        id: Math.random().toString(36).substring(2, 11),
-      });
-      // Show toast notification when an event is added
-      toast.success(`Event "${event.title}" added`, {
-        description: format(new Date(event.start), "MMM d, yyyy"),
-      });
-    }
-    setIsEventDialogOpen(false);
-    setSelectedEvent(null);
-  };
-
-  const handleEventDelete = (eventId: string) => {
-    const deletedEvent = events.find((e) => e.id === eventId);
-    onEventDelete?.(eventId);
-    setIsEventDialogOpen(false);
-    setSelectedEvent(null);
-
-    // Show toast notification when an event is deleted
-    if (deletedEvent) {
-      toast.success(`Event "${deletedEvent.title}" deleted`, {
-        description: format(new Date(deletedEvent.start), "MMM d, yyyy"),
-      });
-    }
-  };
-
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-    onEventUpdate?.(updatedEvent);
-
     // Show toast notification when an event is updated via drag and drop
     toast.success(`Event "${updatedEvent.title}" moved`, {
       description: format(new Date(updatedEvent.start), "MMM d, yyyy"),
@@ -360,8 +316,25 @@ export function EventCalendar({
               <Button
                 className="aspect-square max-[479px]:p-0!"
                 onClick={() => {
-                  setSelectedEvent(null); // Ensure we're creating a new event
-                  setIsEventDialogOpen(true);
+                  const today = new Date();
+
+                  // Snap to 15-minute intervals
+                  const minutes = today.getMinutes();
+                  const remainder = minutes % 15;
+                  if (remainder !== 0) {
+                    if (remainder < 7.5) {
+                      today.setMinutes(minutes - remainder);
+                    } else {
+                      today.setMinutes(minutes + (15 - remainder));
+                    }
+                    today.setSeconds(0);
+                    today.setMilliseconds(0);
+                  }
+
+                  setCreateEventData({
+                    start: today,
+                    end: addMinutesToDate(today, 15),
+                  });
                 }}
               >
                 <PlusIcon
@@ -409,27 +382,27 @@ export function EventCalendar({
           )}
         </div>
 
-        {isAdmin && (
-          <EventDialog
+        {isAdmin && createEventData && (
+          <CreateEventDialog
+            isOpen={isCreateEventDialogOpen}
+            onClose={() => setCreateEventData(null)}
+            data={createEventData}
+          />
+        )}
+
+        {isAdmin && selectedEvent && (
+          <UpdateEventDialog
+            isOpen={isUpdateEventDialogOpen}
+            onClose={() => setSelectedEvent(null)}
             event={selectedEvent}
-            isOpen={isEventDialogOpen}
-            onClose={() => {
-              setIsEventDialogOpen(false);
-              setSelectedEvent(null);
-            }}
-            onSave={handleEventSave}
-            onDelete={handleEventDelete}
           />
         )}
 
         {!isAdmin && selectedEvent && (
           <BookingDialog
+            isOpen={isUpdateEventDialogOpen}
+            onClose={() => setSelectedEvent(null)}
             event={selectedEvent}
-            isOpen={isEventDialogOpen}
-            onClose={() => {
-              setIsEventDialogOpen(false);
-              setSelectedEvent(null);
-            }}
           />
         )}
       </CalendarDndProvider>

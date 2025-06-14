@@ -3,7 +3,6 @@ import { z } from "zod";
 import { twoFactorSchema } from "@/shared/schemas/two-factor-schema";
 import { authClient } from "@/shared/lib/better-auth/client";
 import { user } from "@/shared/lib/drizzle/schema";
-import { appointment } from "@/shared/lib/drizzle/schema";
 
 export type TwoFactorFormValues = z.infer<typeof twoFactorSchema>;
 
@@ -17,7 +16,8 @@ export interface AuthClientError {
 
 export type ActionResponse<T, E extends string> =
   | { data: T; error: null }
-  | { error: { code: E; message: string }; data: null };
+  | { error: ActionError<E>; data: null };
+
+export type ActionError<E extends string> = { code: E; message: string };
 
 export type User = typeof user.$inferSelect;
-export type Appointment = typeof appointment.$inferSelect;

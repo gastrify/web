@@ -1,24 +1,24 @@
 "use server";
 
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 
 import { auth } from "@/shared/lib/better-auth/server";
 import { db } from "@/shared/lib/drizzle/server";
 import { appointment } from "@/shared/lib/drizzle/schema";
 import type { ActionResponse } from "@/shared/types";
-import { isAdmin } from "@/shared/utils/is-admin";
 import { tryCatch } from "@/shared/utils/try-catch";
 
-export type DeleteAppointmentErrorCode =
+import type { Appointment } from "@/features/appointments/types";
+
+export type UserAppointmentsErrorCode =
   | "UNAUTHENTICATED"
   | "FORBIDDEN"
-  | "NOT_FOUND"
   | "INTERNAL_SERVER_ERROR";
 
-export async function deleteAppointment(
-  appointmentId: string,
-): Promise<ActionResponse<{ id: string }, DeleteAppointmentErrorCode>> {
+export const getUserAppointments = async (
+  userId: string,
+): Promise<ActionResponse<Appointment[], UserAppointmentsErrorCode>> => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -28,21 +28,30 @@ export async function deleteAppointment(
       data: null,
       error: {
         code: "UNAUTHENTICATED",
-        message: "You must be logged in to delete an appointment",
+        message: "User is not authenticated",
       },
     };
 
-  if (!isAdmin(session.user))
+  if (session.user.id !== userId)
     return {
       data: null,
       error: {
         code: "FORBIDDEN",
-        message: "You must be an admin to delete an appointment",
+        message: "User can only see their own appointments",
       },
     };
 
   const { data, error } = await tryCatch(
-    db.delete(appointment).where(eq(appointment.id, appointmentId)),
+    db
+      .select()
+      .from(appointment)
+      .where(
+        and(
+          eq(appointment.patientId, userId),
+          eq(appointment.status, "booked"),
+        ),
+      )
+      .orderBy(asc(appointment.start)),
   );
 
   if (error) {
@@ -52,25 +61,13 @@ export async function deleteAppointment(
       data: null,
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message: "An unexpected error occurred",
-      },
-    };
-  }
-
-  if (data && data.rowCount === 0) {
-    return {
-      data: null,
-      error: {
-        code: "NOT_FOUND",
-        message: "Appointment not found",
+        message: "An error occurred while fetching user appointments",
       },
     };
   }
 
   return {
-    data: {
-      id: appointmentId,
-    },
+    data,
     error: null,
   };
-}
+};

@@ -1,72 +1,83 @@
 "use server";
 
-import { db } from "@/shared/lib/drizzle/server";
-import { appointment } from "@/shared/lib/drizzle/schema";
-import { ActionResponse, Appointment } from "@/shared/types";
-import { auth } from "@/shared/lib/better-auth/server";
-import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
 
-type ErrorCode = "UNAUTHENTICATED" | "SERVER_ERROR" | "NOT_FOUND";
+import { db } from "@/shared/lib/drizzle/server";
+import { appointment, user } from "@/shared/lib/drizzle/schema";
+import { auth } from "@/shared/lib/better-auth/server";
+import type { ActionResponse } from "@/shared/types";
 
-export async function getAppointments(): Promise<
-  ActionResponse<Appointment[], ErrorCode>
-> {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+import type { Appointment } from "@/features/appointments/types";
+import { isAdmin } from "@/shared/utils/is-admin";
+import { tryCatch } from "@/shared/utils/try-catch";
 
-    if (!session) {
-      return {
-        error: { code: "UNAUTHENTICATED", message: "User not authenticated" },
-        data: null,
-      };
-    }
+type ErrorCode =
+  | "UNAUTHENTICATED"
+  | "FORBIDDEN"
+  | "INTERNAL_SERVER_ERROR"
+  | "NOT_FOUND";
 
-    const results = await db.query.appointment.findMany();
-    return { data: results, error: null };
-  } catch (error) {
-    console.error("Error al listar citas:", error);
-    return {
-      error: { code: "SERVER_ERROR", message: "Error interno del servidor" },
-      data: null,
-    };
-  }
-}
+type CreatedAppointment = Omit<
+  Appointment,
+  "createdAt" | "patientId" | "meetingLink" | "location"
+> & { patientIdentificationNumber: string | null };
 
-export async function getAppointmentById(
+export async function getAppointment(
   id: string,
-): Promise<ActionResponse<Appointment, ErrorCode>> {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+): Promise<ActionResponse<CreatedAppointment, ErrorCode>> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-    if (!session) {
-      return {
-        error: { code: "UNAUTHENTICATED", message: "User not authenticated" },
-        data: null,
-      };
-    }
-
-    const result = await db.query.appointment.findFirst({
-      where: eq(appointment.id, id),
-    });
-
-    if (!result) {
-      return {
-        error: { code: "NOT_FOUND", message: "Cita no encontrada" },
-        data: null,
-      };
-    }
-
-    return { data: result, error: null };
-  } catch (error) {
-    console.error("Error al obtener cita:", error);
+  if (!session) {
     return {
-      error: { code: "SERVER_ERROR", message: "Error interno del servidor" },
       data: null,
+      error: { code: "UNAUTHENTICATED", message: "User not authenticated" },
     };
   }
+
+  if (!isAdmin(session.user))
+    return {
+      data: null,
+      error: { code: "FORBIDDEN", message: "User not authorized" },
+    };
+
+  const { data, error } = await tryCatch(
+    db
+      .select({
+        id: appointment.id,
+        start: appointment.start,
+        end: appointment.end,
+        status: appointment.status,
+        type: appointment.type,
+        patientIdentificationNumber: user.identificationNumber,
+      })
+      .from(appointment)
+      .leftJoin(user, eq(appointment.patientId, user.id))
+      .where(eq(appointment.id, id)),
+  );
+
+  if (error) {
+    console.error(error);
+
+    return {
+      data: null,
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Error fetching appointment",
+      },
+    };
+  }
+
+  if (data.length === 0)
+    return {
+      data: null,
+      error: { code: "NOT_FOUND", message: "Appointment not found" },
+    };
+
+  return {
+    data: data[0],
+    error: null,
+  };
 }
