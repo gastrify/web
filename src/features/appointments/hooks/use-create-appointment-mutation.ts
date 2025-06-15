@@ -1,58 +1,62 @@
-import { UseFormReturn } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import type { ActionError } from "@/shared/types";
-
-import {
-  createAppointment,
-  type CreateAppointmentErrorCode,
-} from "@/features/appointments/actions/create-appointment";
+import { createAppointment } from "@/features/appointments/actions/create-appointment";
 import type { CreateAppointmentValues } from "@/features/appointments/types";
+import { optimisticSet, rollback } from "./optimistic-helpers";
 
-interface Props {
-  form: UseFormReturn<CreateAppointmentValues>;
-}
-
-export const useCreateAppointmentMutation = ({ form }: Props) => {
+export const useCreateAppointmentMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (values: CreateAppointmentValues) => {
       const { data, error } = await createAppointment(values);
-
       if (error) return Promise.reject(error);
+      return { ...values, id: data?.id ?? `temp-${Date.now()}` };
+    },
+    onMutate: async (newAppointment) => {
+      await queryClient.cancelQueries({ queryKey: ["appointments"] });
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", "incoming"],
+      });
 
-      return data;
+      const prevAppointments = optimisticSet(
+        queryClient,
+        ["appointments"],
+        (old) => [...old, { ...newAppointment, id: `temp-${Date.now()}` }],
+      );
+      let prevIncoming: {
+        appointment: CreateAppointmentValues & { id: string };
+        patient: { name: string; identificationNumber: string; email: string };
+      }[] = [];
+      if (
+        newAppointment.status === "booked" &&
+        newAppointment.patientIdentificationNumber
+      ) {
+        prevIncoming = optimisticSet(
+          queryClient,
+          ["appointments", "incoming"],
+          (old) => [
+            ...old,
+            {
+              appointment: { ...newAppointment, id: `temp-${Date.now()}` },
+              patient: {
+                name: "",
+                identificationNumber:
+                  newAppointment.patientIdentificationNumber,
+                email: "",
+              },
+            },
+          ],
+        );
+      }
+      return { prevAppointments, prevIncoming };
+    },
+    onError: (_err, _newAppointment, ctx) => {
+      rollback(queryClient, ["appointments"], ctx?.prevAppointments);
+      rollback(queryClient, ["appointments", "incoming"], ctx?.prevIncoming);
     },
     onSuccess: () => {
       toast.success("Appointment created successfully 🎉");
-    },
-    onError: (error: ActionError<CreateAppointmentErrorCode>) => {
-      switch (error.code) {
-        case "CONFLICT":
-          form.setError("start", {
-            message:
-              "An appointment already exists for this time. Please try a different one.",
-          });
-          form.setError("end", {
-            message:
-              "An appointment already exists for this time. Please try a different one.",
-          });
-          break;
-
-        case "USER_NOT_FOUND":
-          form.setError("patientIdentificationNumber", {
-            message:
-              "User not found, please try a different identification number",
-          });
-          break;
-
-        default:
-          toast.error("Something went wrong creating appointment 😢", {
-            description: "Please try again later",
-          });
-      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });

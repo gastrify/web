@@ -1,58 +1,108 @@
-import { UseFormReturn } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import type { ActionError } from "@/shared/types";
-
-import {
-  updateAppointment,
-  type UpdateAppointmentErrorCode,
-} from "@/features/appointments/actions/update-appointment";
+import { updateAppointment } from "@/features/appointments/actions/update-appointment";
 import type { UpdateAppointmentValues } from "@/features/appointments/types";
+import { optimisticSet, rollback } from "./optimistic-helpers";
 
-interface Props {
-  form: UseFormReturn<UpdateAppointmentValues>;
-}
-
-export const useUpdateAppointmentMutation = ({ form }: Props) => {
+export const useUpdateAppointmentMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (values: UpdateAppointmentValues) => {
-      const { data, error } = await updateAppointment(values);
-
+      const { error } = await updateAppointment(values);
       if (error) return Promise.reject(error);
+      return { ...values };
+    },
+    onMutate: async (updatedAppointment) => {
+      await queryClient.cancelQueries({ queryKey: ["appointments"] });
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", "incoming"],
+      });
 
-      return data;
+      const prevAppointments = optimisticSet(
+        queryClient,
+        ["appointments"],
+        (old) =>
+          old.map((a) =>
+            a.id === updatedAppointment.id
+              ? { ...a, ...updatedAppointment }
+              : a,
+          ),
+      );
+      type IncomingAppointment = {
+        appointment: UpdateAppointmentValues;
+        patient: {
+          name: string;
+          identificationNumber: string;
+          email: string;
+        };
+      };
+      let prevIncoming: IncomingAppointment[] = [];
+      if (
+        updatedAppointment.status === "booked" &&
+        updatedAppointment.patientIdentificationNumber
+      ) {
+        const incomingList =
+          queryClient.getQueryData<IncomingAppointment[]>([
+            "appointments",
+            "incoming",
+          ]) || [];
+        const exists = incomingList.some(
+          (a) => a.appointment.id === updatedAppointment.id,
+        );
+        if (exists) {
+          prevIncoming = optimisticSet(
+            queryClient,
+            ["appointments", "incoming"],
+            (old) =>
+              old.map((a) =>
+                a.appointment.id === updatedAppointment.id
+                  ? {
+                      ...a,
+                      appointment: { ...a.appointment, ...updatedAppointment },
+                      patient: {
+                        ...a.patient,
+                        identificationNumber:
+                          updatedAppointment.patientIdentificationNumber,
+                      },
+                    }
+                  : a,
+              ),
+          );
+        } else {
+          prevIncoming = optimisticSet(
+            queryClient,
+            ["appointments", "incoming"],
+            (old) => [
+              ...old,
+              {
+                appointment: { ...updatedAppointment },
+                patient: {
+                  name: "",
+                  identificationNumber:
+                    updatedAppointment.patientIdentificationNumber,
+                  email: "",
+                },
+              },
+            ],
+          );
+        }
+      } else {
+        prevIncoming = optimisticSet(
+          queryClient,
+          ["appointments", "incoming"],
+          (old) =>
+            old.filter((a) => a.appointment.id !== updatedAppointment.id),
+        );
+      }
+      return { prevAppointments, prevIncoming };
+    },
+    onError: (_err, _updatedAppointment, ctx) => {
+      rollback(queryClient, ["appointments"], ctx?.prevAppointments);
+      rollback(queryClient, ["appointments", "incoming"], ctx?.prevIncoming);
     },
     onSuccess: () => {
       toast.success("Appointment updated successfully 🎉");
-    },
-    onError: (error: ActionError<UpdateAppointmentErrorCode>) => {
-      switch (error.code) {
-        case "CONFLICT":
-          form.setError("start", {
-            message:
-              "An appointment already exists for this time. Please try a different one.",
-          });
-          form.setError("end", {
-            message:
-              "An appointment already exists for this time. Please try a different one.",
-          });
-          break;
-
-        case "USER_NOT_FOUND":
-          form.setError("patientIdentificationNumber", {
-            message:
-              "User not found, please try a different identification number",
-          });
-          break;
-
-        default:
-          toast.error("Something went wrong updating appointment 😢", {
-            description: "Please try again later",
-          });
-      }
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
