@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { updateAppointment } from "@/features/appointments/actions/update-appointment";
-import type { UpdateAppointmentValues } from "@/features/appointments/types";
+import type {
+  UpdateAppointmentValues,
+  Appointment,
+} from "@/features/appointments/types";
 import { optimisticSet, rollback } from "./optimistic-helpers";
 
 export const useUpdateAppointmentMutation = () => {
@@ -19,7 +22,7 @@ export const useUpdateAppointmentMutation = () => {
         queryKey: ["appointments", "incoming"],
       });
 
-      const prevAppointments = optimisticSet(
+      const prevAppointments = optimisticSet<Appointment>(
         queryClient,
         ["appointments"],
         (old) =>
@@ -51,7 +54,7 @@ export const useUpdateAppointmentMutation = () => {
           (a) => a.appointment.id === updatedAppointment.id,
         );
         if (exists) {
-          prevIncoming = optimisticSet(
+          prevIncoming = optimisticSet<IncomingAppointment>(
             queryClient,
             ["appointments", "incoming"],
             (old) =>
@@ -63,14 +66,14 @@ export const useUpdateAppointmentMutation = () => {
                       patient: {
                         ...a.patient,
                         identificationNumber:
-                          updatedAppointment.patientIdentificationNumber,
+                          updatedAppointment.patientIdentificationNumber || "",
                       },
                     }
                   : a,
               ),
           );
         } else {
-          prevIncoming = optimisticSet(
+          prevIncoming = optimisticSet<IncomingAppointment>(
             queryClient,
             ["appointments", "incoming"],
             (old) => [
@@ -80,7 +83,7 @@ export const useUpdateAppointmentMutation = () => {
                 patient: {
                   name: "",
                   identificationNumber:
-                    updatedAppointment.patientIdentificationNumber,
+                    updatedAppointment.patientIdentificationNumber || "",
                   email: "",
                 },
               },
@@ -88,7 +91,7 @@ export const useUpdateAppointmentMutation = () => {
           );
         }
       } else {
-        prevIncoming = optimisticSet(
+        prevIncoming = optimisticSet<IncomingAppointment>(
           queryClient,
           ["appointments", "incoming"],
           (old) =>
@@ -98,8 +101,12 @@ export const useUpdateAppointmentMutation = () => {
       return { prevAppointments, prevIncoming };
     },
     onError: (_err, _updatedAppointment, ctx) => {
-      rollback(queryClient, ["appointments"], ctx?.prevAppointments);
-      rollback(queryClient, ["appointments", "incoming"], ctx?.prevIncoming);
+      rollback(queryClient, ["appointments"], ctx?.prevAppointments ?? []);
+      rollback(
+        queryClient,
+        ["appointments", "incoming"],
+        ctx?.prevIncoming ?? [],
+      );
     },
     onSuccess: () => {
       toast.success("Appointment updated successfully 🎉");

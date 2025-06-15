@@ -3,6 +3,9 @@ import { toast } from "sonner";
 import { cancelAppointment } from "@/features/appointments/actions/cancel-appointment";
 import { useSession } from "@/shared/hooks/use-session";
 import { optimisticSet, rollback } from "./optimistic-helpers";
+import type { Appointment } from "@/features/appointments/types";
+
+type IncomingAppointment = { appointment: { id: string } };
 
 export const useCancelAppointmentMutation = () => {
   const queryClient = useQueryClient();
@@ -16,17 +19,17 @@ export const useCancelAppointmentMutation = () => {
     onMutate: async (appointmentId: string) => {
       await queryClient.cancelQueries({ queryKey: ["appointments"] });
 
-      const prevAppointments = optimisticSet(
+      const prevAppointments = optimisticSet<Appointment>(
         queryClient,
         ["appointments"],
         (old) => old.filter((a) => a.id !== appointmentId),
       );
-      const prevUserAppointments = optimisticSet(
+      const prevUserAppointments = optimisticSet<Appointment>(
         queryClient,
         ["appointments", session?.user.id],
         (old) => old.filter((a) => a.id !== appointmentId),
       );
-      const prevIncoming = optimisticSet(
+      const prevIncoming = optimisticSet<IncomingAppointment>(
         queryClient,
         ["appointments", "incoming"],
         (old) => old.filter((a) => a.appointment.id !== appointmentId),
@@ -35,13 +38,17 @@ export const useCancelAppointmentMutation = () => {
       return { prevAppointments, prevUserAppointments, prevIncoming };
     },
     onError: (_err, _appointmentId, ctx) => {
-      rollback(queryClient, ["appointments"], ctx?.prevAppointments);
+      rollback(queryClient, ["appointments"], ctx?.prevAppointments ?? []);
       rollback(
         queryClient,
         ["appointments", session?.user.id],
-        ctx?.prevUserAppointments,
+        ctx?.prevUserAppointments ?? [],
       );
-      rollback(queryClient, ["appointments", "incoming"], ctx?.prevIncoming);
+      rollback(
+        queryClient,
+        ["appointments", "incoming"],
+        ctx?.prevIncoming ?? [],
+      );
     },
     onSuccess: () => {
       toast.success("Appointment cancelled successfully 🎉");

@@ -29,7 +29,7 @@ export const useBookAppointmentMutation = () => {
 
       await queryClient.cancelQueries({ queryKey: ["appointments"] });
 
-      const prevAppointments = optimisticSet(
+      const prevAppointments = optimisticSet<Appointment>(
         queryClient,
         ["appointments"],
         (old) =>
@@ -75,13 +75,17 @@ export const useBookAppointmentMutation = () => {
       return { prevAppointments, prevUserAppointments, prevIncoming };
     },
     onError: (_error, values, ctx) => {
-      rollback(queryClient, ["appointments"], ctx?.prevAppointments);
+      rollback(queryClient, ["appointments"], ctx?.prevAppointments ?? []);
       rollback(
         queryClient,
         ["appointments", values.patientId],
-        ctx?.prevUserAppointments,
+        ctx?.prevUserAppointments ?? [],
       );
-      rollback(queryClient, ["appointments", "incoming"], ctx?.prevIncoming);
+      rollback(
+        queryClient,
+        ["appointments", "incoming"],
+        ctx?.prevIncoming ?? [],
+      );
     },
     onSuccess: () => {
       toast.success("Appointment booked successfully 🎉");

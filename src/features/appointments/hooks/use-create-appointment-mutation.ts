@@ -42,7 +42,7 @@ export const useCreateAppointmentMutation = () => {
               patient: {
                 name: "",
                 identificationNumber:
-                  newAppointment.patientIdentificationNumber,
+                  newAppointment.patientIdentificationNumber || "",
                 email: "",
               },
             },
@@ -52,8 +52,12 @@ export const useCreateAppointmentMutation = () => {
       return { prevAppointments, prevIncoming };
     },
     onError: (_err, _newAppointment, ctx) => {
-      rollback(queryClient, ["appointments"], ctx?.prevAppointments);
-      rollback(queryClient, ["appointments", "incoming"], ctx?.prevIncoming);
+      rollback(queryClient, ["appointments"], ctx?.prevAppointments ?? []);
+      rollback(
+        queryClient,
+        ["appointments", "incoming"],
+        ctx?.prevIncoming ?? [],
+      );
     },
     onSuccess: () => {
       toast.success("Appointment created successfully 🎉");

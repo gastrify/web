@@ -2,6 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { deleteAppointment } from "@/features/appointments/actions/delete-appointment";
 import { optimisticSet, rollback } from "./optimistic-helpers";
+import type { Appointment } from "@/features/appointments/types";
+
+type IncomingAppointment = { appointment: { id: string } };
 
 export const useDeleteAppointmentMutation = () => {
   const queryClient = useQueryClient();
@@ -17,12 +20,12 @@ export const useDeleteAppointmentMutation = () => {
         queryKey: ["appointments", "incoming"],
       });
 
-      const prevAppointments = optimisticSet(
+      const prevAppointments = optimisticSet<Appointment>(
         queryClient,
         ["appointments"],
         (old) => old.filter((a) => a.id !== appointmentId),
       );
-      const prevIncoming = optimisticSet(
+      const prevIncoming = optimisticSet<IncomingAppointment>(
         queryClient,
         ["appointments", "incoming"],
         (old) => old.filter((a) => a.appointment.id !== appointmentId),
@@ -31,8 +34,12 @@ export const useDeleteAppointmentMutation = () => {
       return { prevAppointments, prevIncoming };
     },
     onError: (_err, _appointmentId, ctx) => {
-      rollback(queryClient, ["appointments"], ctx?.prevAppointments);
-      rollback(queryClient, ["appointments", "incoming"], ctx?.prevIncoming);
+      rollback(queryClient, ["appointments"], ctx?.prevAppointments ?? []);
+      rollback(
+        queryClient,
+        ["appointments", "incoming"],
+        ctx?.prevIncoming ?? [],
+      );
     },
     onSuccess: () => {
       toast.success("Appointment deleted successfully 🎉");
