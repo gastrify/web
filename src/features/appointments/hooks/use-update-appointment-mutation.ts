@@ -1,122 +1,157 @@
+import { UseFormReturn } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { updateAppointment } from "@/features/appointments/actions/update-appointment";
+
+import type { ActionError } from "@/shared/types";
+
+import {
+  updateAppointment,
+  type UpdateAppointmentErrorCode,
+} from "@/features/appointments/actions/update-appointment";
 import type {
   UpdateAppointmentValues,
-  Appointment,
+  CalendarEvent,
 } from "@/features/appointments/types";
-import { optimisticSet, rollback } from "./optimistic-helpers";
 
-export const useUpdateAppointmentMutation = () => {
+interface Props {
+  form: UseFormReturn<UpdateAppointmentValues>;
+}
+
+export const useUpdateAppointmentMutation = ({ form }: Props) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (values: UpdateAppointmentValues) => {
-      const { error } = await updateAppointment(values);
-      if (error) return Promise.reject(error);
-      return { ...values };
-    },
-    onMutate: async (updatedAppointment) => {
-      await queryClient.cancelQueries({ queryKey: ["appointments"] });
-      await queryClient.cancelQueries({
-        queryKey: ["appointments", "incoming"],
-      });
+      const { data, error } = await updateAppointment(values);
 
-      const prevAppointments = optimisticSet<Appointment>(
-        queryClient,
-        ["appointments"],
-        (old) =>
-          old.map((a) =>
-            a.id === updatedAppointment.id
-              ? { ...a, ...updatedAppointment }
-              : a,
-          ),
+      if (error) return Promise.reject(error);
+
+      return data;
+    },
+    onMutate: async (updatedAppointmentValues) => {
+      await queryClient.cancelQueries({ queryKey: ["appointments"] });
+
+      const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
+        "appointments",
+      ]);
+      const currentAppointment = previousAppointments?.find(
+        (apt) => apt.id === updatedAppointmentValues.id,
       );
-      type IncomingAppointment = {
-        appointment: UpdateAppointmentValues;
-        patient: {
-          name: string;
-          identificationNumber: string;
-          email: string;
-        };
-      };
-      let prevIncoming: IncomingAppointment[] = [];
-      if (
-        updatedAppointment.status === "booked" &&
-        updatedAppointment.patientIdentificationNumber
-      ) {
-        const incomingList =
-          queryClient.getQueryData<IncomingAppointment[]>([
-            "appointments",
-            "incoming",
-          ]) || [];
-        const exists = incomingList.some(
-          (a) => a.appointment.id === updatedAppointment.id,
+
+      const isChangingFromBookedToAvailable =
+        currentAppointment?.title === "booked" &&
+        updatedAppointmentValues.status === "available";
+
+      if (isChangingFromBookedToAvailable) {
+        queryClient.setQueryData<CalendarEvent[]>(
+          ["appointments"],
+          (oldAppointments) => {
+            if (!oldAppointments) return [];
+
+            return oldAppointments.map((appointment) => {
+              if (appointment.id === updatedAppointmentValues.id) {
+                return {
+                  ...appointment,
+                  title: "available",
+                  start: updatedAppointmentValues.start,
+                  end: updatedAppointmentValues.end,
+                  color: "emerald" as const,
+                };
+              }
+              return appointment;
+            });
+          },
         );
-        if (exists) {
-          prevIncoming = optimisticSet<IncomingAppointment>(
-            queryClient,
-            ["appointments", "incoming"],
-            (old) =>
-              old.map((a) =>
-                a.appointment.id === updatedAppointment.id
-                  ? {
-                      ...a,
-                      appointment: { ...a.appointment, ...updatedAppointment },
-                      patient: {
-                        ...a.patient,
-                        identificationNumber:
-                          updatedAppointment.patientIdentificationNumber || "",
-                      },
-                    }
-                  : a,
-              ),
-          );
-        } else {
-          prevIncoming = optimisticSet<IncomingAppointment>(
-            queryClient,
-            ["appointments", "incoming"],
-            (old) => [
-              ...old,
-              {
-                appointment: { ...updatedAppointment },
-                patient: {
-                  name: "",
-                  identificationNumber:
-                    updatedAppointment.patientIdentificationNumber || "",
-                  email: "",
-                },
-              },
-            ],
-          );
-        }
-      } else {
-        prevIncoming = optimisticSet<IncomingAppointment>(
-          queryClient,
-          ["appointments", "incoming"],
-          (old) =>
-            old.filter((a) => a.appointment.id !== updatedAppointment.id),
+      } else if (currentAppointment) {
+        queryClient.setQueryData<CalendarEvent[]>(
+          ["appointments"],
+          (oldAppointments) => {
+            if (!oldAppointments) return [];
+
+            return oldAppointments.map((appointment) => {
+              if (appointment.id === updatedAppointmentValues.id) {
+                return {
+                  ...appointment,
+                  title: updatedAppointmentValues.status,
+                  start: updatedAppointmentValues.start,
+                  end: updatedAppointmentValues.end,
+                  color:
+                    updatedAppointmentValues.status === "available"
+                      ? "emerald"
+                      : "sky",
+                };
+              }
+              return appointment;
+            });
+          },
         );
       }
-      return { prevAppointments, prevIncoming };
+
+      return {
+        previousAppointments,
+        wasOptimisticUpdate: isChangingFromBookedToAvailable,
+      };
     },
-    onError: (_err, _updatedAppointment, ctx) => {
-      rollback(queryClient, ["appointments"], ctx?.prevAppointments ?? []);
-      rollback(
-        queryClient,
-        ["appointments", "incoming"],
-        ctx?.prevIncoming ?? [],
-      );
+    onError: (
+      error: ActionError<UpdateAppointmentErrorCode>,
+      updatedAppointmentValues,
+      context,
+    ) => {
+      if (context?.previousAppointments && context.wasOptimisticUpdate) {
+        queryClient.setQueryData(
+          ["appointments"],
+          context.previousAppointments,
+        );
+      }
+
+      switch (error.code) {
+        case "CONFLICT":
+          form.setError("start", {
+            message:
+              "An appointment already exists for this time. Please try a different one.",
+          });
+          form.setError("end", {
+            message:
+              "An appointment already exists for this time. Please try a different one.",
+          });
+          break;
+
+        case "USER_NOT_FOUND":
+          form.setError("patientIdentificationNumber", {
+            message:
+              "User not found, please try a different identification number",
+          });
+          break;
+
+        default:
+          toast.error("Something went wrong updating appointment 😢", {
+            description: "Please try again later",
+          });
+      }
     },
     onSuccess: () => {
       toast.success("Appointment updated successfully 🎉");
     },
-    onSettled: (_data, _error, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
-      queryClient.invalidateQueries({ queryKey: ["appointments", "incoming"] });
+    onSettled: (_data, _error, appointmentVariables) => {
       queryClient.invalidateQueries({
-        queryKey: ["appointments", variables.id],
+        queryKey: ["appointments", appointmentVariables.id],
       });
+
+      const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
+        "appointments",
+      ]);
+      const currentAppointment = previousAppointments?.find(
+        (apt) => apt.id === appointmentVariables.id,
+      );
+
+      if (
+        appointmentVariables.status === "booked" ||
+        currentAppointment?.title === "booked"
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: ["appointments", "incoming"],
+        });
+      }
     },
   });
 };

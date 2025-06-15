@@ -16,6 +16,10 @@ export function Appointments() {
 
       return data;
     },
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: "always",
   });
 
   if (isError)

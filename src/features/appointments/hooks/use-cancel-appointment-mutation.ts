@@ -1,11 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 import { cancelAppointment } from "@/features/appointments/actions/cancel-appointment";
 import { useSession } from "@/shared/hooks/use-session";
-import { optimisticSet, rollback } from "./optimistic-helpers";
-import type { Appointment } from "@/features/appointments/types";
-
-type IncomingAppointment = { appointment: { id: string } };
+import type { CalendarEvent } from "@/features/appointments/types";
 
 export const useCancelAppointmentMutation = () => {
   const queryClient = useQueryClient();
@@ -14,51 +12,78 @@ export const useCancelAppointmentMutation = () => {
   return useMutation({
     mutationFn: async (appointmentId: string) => {
       const { error } = await cancelAppointment(appointmentId);
-      if (error) throw error;
+
+      if (error) return Promise.reject(error);
     },
-    onMutate: async (appointmentId: string) => {
+    onMutate: async (appointmentId) => {
       await queryClient.cancelQueries({ queryKey: ["appointments"] });
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", session?.user.id],
+      });
 
-      const prevAppointments = optimisticSet<Appointment>(
-        queryClient,
+      const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
+        "appointments",
+      ]);
+      const previousUserAppointments = queryClient.getQueryData<
+        CalendarEvent[]
+      >(["appointments", session?.user.id]);
+
+      queryClient.setQueryData<CalendarEvent[]>(
         ["appointments"],
-        (old) => old.filter((a) => a.id !== appointmentId),
-      );
-      const prevUserAppointments = optimisticSet<Appointment>(
-        queryClient,
-        ["appointments", session?.user.id],
-        (old) => old.filter((a) => a.id !== appointmentId),
-      );
-      const prevIncoming = optimisticSet<IncomingAppointment>(
-        queryClient,
-        ["appointments", "incoming"],
-        (old) => old.filter((a) => a.appointment.id !== appointmentId),
+        (oldAppointments) => {
+          if (!oldAppointments) return [];
+
+          return oldAppointments.map((appointment) => {
+            if (appointment.id === appointmentId) {
+              return {
+                ...appointment,
+                title: "available",
+                color: "emerald" as const,
+              };
+            }
+            return appointment;
+          });
+        },
       );
 
-      return { prevAppointments, prevUserAppointments, prevIncoming };
-    },
-    onError: (_err, _appointmentId, ctx) => {
-      rollback(queryClient, ["appointments"], ctx?.prevAppointments ?? []);
-      rollback(
-        queryClient,
+      queryClient.setQueryData<CalendarEvent[]>(
         ["appointments", session?.user.id],
-        ctx?.prevUserAppointments ?? [],
+        (oldUserAppointments) => {
+          if (!oldUserAppointments) return [];
+          return oldUserAppointments.filter(
+            (appointment) => appointment.id !== appointmentId,
+          );
+        },
       );
-      rollback(
-        queryClient,
-        ["appointments", "incoming"],
-        ctx?.prevIncoming ?? [],
-      );
+
+      return { previousAppointments, previousUserAppointments };
+    },
+    onError: (_error, _appointmentId, context) => {
+      if (context?.previousAppointments) {
+        queryClient.setQueryData(
+          ["appointments"],
+          context.previousAppointments,
+        );
+      }
+      if (context?.previousUserAppointments) {
+        queryClient.setQueryData(
+          ["appointments", session?.user.id],
+          context.previousUserAppointments,
+        );
+      }
+
+      toast.error("Failed to cancel appointment 😢", {
+        description: "Please try again later",
+      });
     },
     onSuccess: () => {
       toast.success("Appointment cancelled successfully 🎉");
     },
-    onSettled: (_data, _error, appointmentId) => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+    onSettled: (data, error, appointmentId) => {
       queryClient.invalidateQueries({
         queryKey: ["appointments", session?.user.id],
       });
-      queryClient.invalidateQueries({ queryKey: ["appointments", "incoming"] });
+
       queryClient.invalidateQueries({
         queryKey: ["appointments", appointmentId],
       });

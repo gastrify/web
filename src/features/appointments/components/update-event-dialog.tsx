@@ -110,7 +110,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
     return options;
   }, []);
 
-  const { mutate, isPending } = useUpdateAppointmentMutation();
+  const { mutate, isPending } = useUpdateAppointmentMutation({ form });
 
   const onSubmit = (values: UpdateAppointmentValues) => {
     mutate(values, {

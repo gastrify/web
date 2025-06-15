@@ -84,7 +84,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
     return options;
   }, []);
 
-  const { mutate, isPending } = useCreateAppointmentMutation();
+  const { mutate, isPending } = useCreateAppointmentMutation({ form });
 
   const onSubmit = (values: CreateAppointmentValues) => {
     mutate(values, {
