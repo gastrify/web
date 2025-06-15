@@ -57,6 +57,7 @@ import type {
 import { useUpdateAppointmentMutation } from "@/features/appointments/hooks/use-update-appointment-mutation";
 import { formatTimeForInput } from "@/features/appointments/utils/format-time-for-input";
 import { useDeleteAppointmentMutation } from "../hooks/use-delete-appointment-mutation";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 interface Props {
   event: CalendarEvent;
@@ -65,8 +66,8 @@ interface Props {
 }
 
 export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
-  const { data } = useQuery({
-    queryKey: ["appointments", event.id],
+  const { data, isFetching } = useQuery({
+    queryKey: ["appointments", "details", event.id],
     queryFn: async () => {
       const { data, error } = await getAppointment(event.id);
 
@@ -127,11 +128,10 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
   } = useDeleteAppointmentMutation();
 
   const onDelete = () => {
-    deleteAppointment(event.id, {
-      onSuccess: () => {
-        onClose();
-      },
+    deleteAppointment({
+      appointmentId: event.id,
     });
+    onClose();
   };
 
   return (
@@ -158,7 +158,10 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                         <FormLabel>Start Date</FormLabel>
 
                         <Popover>
-                          <PopoverTrigger disabled={isPending} asChild>
+                          <PopoverTrigger
+                            disabled={isPending || isFetching}
+                            asChild
+                          >
                             <FormControl>
                               <Button
                                 type="button"
@@ -193,7 +196,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                         <FormLabel>Start Time</FormLabel>
 
                         <Select
-                          disabled={isPending}
+                          disabled={isPending || isFetching}
                           onValueChange={(value) => {
                             const [startHours = 0, startMinutes = 0] = value
                               .split(":")
@@ -243,7 +246,10 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                         <FormLabel>End Date</FormLabel>
 
                         <Popover>
-                          <PopoverTrigger disabled={isPending} asChild>
+                          <PopoverTrigger
+                            disabled={isPending || isFetching}
+                            asChild
+                          >
                             <FormControl>
                               <Button
                                 type="button"
@@ -278,7 +284,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                         <FormLabel>End Time</FormLabel>
 
                         <Select
-                          disabled={isPending}
+                          disabled={isPending || isFetching}
                           onValueChange={(value) => {
                             const [endHours = 0, endMinutes = 0] = value
                               .split(":")
@@ -314,46 +320,58 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col gap-4">
-                    <FormLabel>Appointment Status</FormLabel>
+              {!isFetching && (
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col gap-4">
+                      <FormLabel>Appointment Status</FormLabel>
 
-                    <FormControl>
-                      <RadioGroup
-                        disabled={isPending}
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="flex"
-                      >
-                        <FormItem className="flex items-center gap-3">
-                          <FormControl>
-                            <RadioGroupItem value="available" />
-                          </FormControl>
+                      <FormControl>
+                        <RadioGroup
+                          disabled={isPending || isFetching}
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="flex"
+                        >
+                          <FormItem className="flex items-center gap-3">
+                            <FormControl>
+                              <RadioGroupItem value="available" />
+                            </FormControl>
 
-                          <FormLabel className="font-normal">
-                            Available
-                          </FormLabel>
-                        </FormItem>
+                            <FormLabel className="font-normal">
+                              Available
+                            </FormLabel>
+                          </FormItem>
 
-                        <FormItem className="flex items-center gap-3">
-                          <FormControl>
-                            <RadioGroupItem value="booked" />
-                          </FormControl>
+                          <FormItem className="flex items-center gap-3">
+                            <FormControl>
+                              <RadioGroupItem value="booked" />
+                            </FormControl>
 
-                          <FormLabel className="font-normal">Booked</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
+                            <FormLabel className="font-normal">
+                              Booked
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-              {form.watch("status") === "booked" && (
+              {isFetching && (
+                <div className="flex flex-col gap-3">
+                  <Skeleton className="h-8 w-[50%]" />
+                  <Skeleton className="h-8 w-[80%]" />
+                  <Skeleton className="h-8 w-[60%]" />
+                </div>
+              )}
+
+              {form.watch("status") === "booked" && !isFetching && (
                 <>
                   <FormField
                     control={form.control}
@@ -365,7 +383,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                         <div className="relative">
                           <FormControl>
                             <Input
-                              disabled={isPending}
+                              disabled={isPending || isFetching}
                               maxLength={10}
                               minLength={10}
                               className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
@@ -404,7 +422,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
 
                         <FormControl>
                           <RadioGroup
-                            disabled={isPending}
+                            disabled={isPending || isFetching}
                             onValueChange={field.onChange}
                             value={field.value}
                             className="flex"
@@ -444,7 +462,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                 type="button"
                 variant="destructive"
                 onClick={onDelete}
-                disabled={isDeleting}
+                disabled={isDeleting || isFetching}
               >
                 {isDeleting && <LoaderIcon className="animate-spin" />}
                 {isDeleteError && <RotateCcwIcon />}
@@ -459,7 +477,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                 <Button
                   type="submit"
                   form="event-dialog-form"
-                  disabled={isPending}
+                  disabled={isPending || isFetching}
                 >
                   {isPending && <LoaderIcon className="animate-spin" />} Save
                 </Button>

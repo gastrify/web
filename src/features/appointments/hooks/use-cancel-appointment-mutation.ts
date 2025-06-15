@@ -3,75 +3,67 @@ import { toast } from "sonner";
 
 import { cancelAppointment } from "@/features/appointments/actions/cancel-appointment";
 import { useSession } from "@/shared/hooks/use-session";
-import type { CalendarEvent } from "@/features/appointments/types";
+import type { Appointment, CalendarEvent } from "@/features/appointments/types";
 import {
-  optimisticSet,
+  optimisticRemove,
+  optimisticUpdate,
   rollback,
-} from "@/features/appointments/hooks/optimistic-helpers";
+} from "@/features/appointments/utils/optimistic-helpers";
+
+type CancelAppointmentValues = {
+  appointmentId: string;
+};
 
 export const useCancelAppointmentMutation = () => {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
 
   return useMutation({
-    mutationFn: async (appointmentId: string) => {
-      const { error } = await cancelAppointment(appointmentId);
+    mutationFn: async (variables: CancelAppointmentValues) => {
+      const { error } = await cancelAppointment(variables.appointmentId);
 
       if (error) return Promise.reject(error);
     },
-    onMutate: async (appointmentId) => {
-      if (!session?.user?.id) {
-        throw new Error("User session not available");
-      }
-
-      const userId = session.user.id;
-
-      await queryClient.cancelQueries({ queryKey: ["appointments"] });
+    onMutate: async (variables) => {
       await queryClient.cancelQueries({
-        queryKey: ["appointments", userId],
+        queryKey: ["appointments", "list", "calendar"],
+      });
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", "list", "user", session?.user?.id],
       });
 
-      const previousAppointments = optimisticSet<CalendarEvent>(
+      const previousCalendarAppointments = optimisticUpdate<CalendarEvent>(
         queryClient,
-        ["appointments"],
-        (oldAppointments) => {
-          return oldAppointments.map((appointment) => {
-            if (appointment.id === appointmentId) {
-              return {
-                ...appointment,
-                title: "available",
-                color: "emerald" as const,
-              };
-            }
-            return appointment;
-          });
-        },
+        ["appointments", "list", "calendar"],
+        (calendarAppointment) =>
+          calendarAppointment.id === variables.appointmentId,
+        (calendarAppointment) => ({
+          ...calendarAppointment,
+          title: "available",
+          color: "emerald",
+        }),
       );
 
-      const previousUserAppointments = optimisticSet<CalendarEvent>(
+      const previousUserAppointments = optimisticRemove<Appointment>(
         queryClient,
-        ["appointments", userId],
-        (oldUserAppointments) => {
-          return oldUserAppointments.filter(
-            (appointment) => appointment.id !== appointmentId,
-          );
-        },
+        ["appointments", "list", "user", session?.user?.id],
+        (appointment) => appointment.id === variables.appointmentId,
       );
 
-      return { previousAppointments, previousUserAppointments, userId };
+      return { previousCalendarAppointments, previousUserAppointments };
     },
-    onError: (_error, _appointmentId, context) => {
-      if (context?.previousAppointments) {
+    onError: (_error, _variables, context) => {
+      if (context?.previousCalendarAppointments) {
         rollback<CalendarEvent>(
           queryClient,
-          ["appointments"],
-          context.previousAppointments,
+          ["appointments", "list", "calendar"],
+          context.previousCalendarAppointments,
         );
       }
-      if (context?.previousUserAppointments && context?.userId) {
-        rollback<CalendarEvent>(
+      if (context?.previousUserAppointments) {
+        rollback<Appointment>(
           queryClient,
-          ["appointments", context.userId],
+          ["appointments", "list", "user", session?.user?.id],
           context.previousUserAppointments,
         );
       }
@@ -80,23 +72,13 @@ export const useCancelAppointmentMutation = () => {
         description: "Please try again later",
       });
     },
-    onSuccess: () => {
-      toast.success("Appointment cancelled successfully 🎉");
-    },
-    onSettled: (data, error, appointmentId, context) => {
-      if (!context?.userId) return;
-
+    onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ["appointments", context.userId],
+        queryKey: ["appointments", "list", "user", session?.user?.id],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["appointments", appointmentId],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["appointments"],
-        exact: true,
+        queryKey: ["appointments", "list", "calendar"],
       });
     },
   });

@@ -8,7 +8,7 @@ export const useAppointmentCard = () => {
   } = useCancelAppointmentMutation();
 
   const handleCancelAppointment = (appointmentId: string) =>
-    cancelAppointment(appointmentId);
+    cancelAppointment({ appointmentId });
 
   return {
     isCancelAppointmentPending,

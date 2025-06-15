@@ -11,11 +11,9 @@ import {
 import type {
   CreateAppointmentValues,
   CalendarEvent,
+  IncomingAppointment,
 } from "@/features/appointments/types";
-import {
-  optimisticSet,
-  rollback,
-} from "@/features/appointments/hooks/optimistic-helpers";
+import { optimisticAdd } from "@/features/appointments/utils/optimistic-helpers";
 
 interface Props {
   form: UseFormReturn<CreateAppointmentValues>;
@@ -25,54 +23,60 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (values: CreateAppointmentValues) => {
-      const { data, error } = await createAppointment(values);
+    mutationFn: async (variables: CreateAppointmentValues) => {
+      const { data, error } = await createAppointment(variables);
 
       if (error) return Promise.reject(error);
 
       return data;
     },
-    onMutate: async (appointmentValues) => {
-      if (appointmentValues.status !== "available") {
-        return;
-      }
-
-      await queryClient.cancelQueries({ queryKey: ["appointments"] });
-
-      const previousAppointments = optimisticSet<CalendarEvent>(
-        queryClient,
-        ["appointments"],
-        (oldAppointments) => {
-          const optimisticEvent: CalendarEvent = {
-            id: `temp-${Date.now()}`,
-            title: "available",
-            start: appointmentValues.start,
-            end: appointmentValues.end,
-            color: "emerald" as const,
-          };
-
-          return [...oldAppointments, optimisticEvent];
-        },
-      );
-
-      return { previousAppointments };
-    },
-    onError: (
-      error: ActionError<CreateAppointmentErrorCode>,
-      appointmentValues,
-      context,
-    ) => {
+    onSuccess: async (data, variables) => {
+      //check if data is an incoming appointment
       if (
-        context?.previousAppointments &&
-        appointmentValues.status === "available"
+        "patient" in data &&
+        variables.status === "booked" &&
+        variables.patientIdentificationNumber
       ) {
-        rollback<CalendarEvent>(
+        optimisticAdd<IncomingAppointment>(
           queryClient,
-          ["appointments"],
-          context.previousAppointments,
+          ["appointments", "list", "incoming"],
+          {
+            appointment: data.appointment,
+            patient: data.patient,
+          },
+        );
+
+        optimisticAdd<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "calendar"],
+          {
+            id: data.appointment.id,
+            title: "booked",
+            start: data.appointment.start,
+            end: data.appointment.end,
+            color: "sky",
+          },
         );
       }
 
+      //check if data is an available appointment
+      if ("id" in data && variables.status === "available") {
+        optimisticAdd<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "calendar"],
+          {
+            id: data.id,
+            title: "available",
+            start: variables.start,
+            end: variables.end,
+            color: "emerald",
+          },
+        );
+      }
+
+      toast.success("Appointment created successfully 🎉");
+    },
+    onError: (error: ActionError<CreateAppointmentErrorCode>) => {
       switch (error.code) {
         case "CONFLICT":
           form.setError("start", {
@@ -98,62 +102,13 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
           });
       }
     },
-    onSuccess: (createdAppointmentData, appointmentValues) => {
-      toast.success("Appointment created successfully 🎉");
-
-      optimisticSet<CalendarEvent>(
-        queryClient,
-        ["appointments"],
-        (oldAppointments) => {
-          if (
-            appointmentValues.status === "available" &&
-            createdAppointmentData?.id
-          ) {
-            return oldAppointments.map((event) => {
-              if (
-                event.id.startsWith("temp-") &&
-                event.start.getTime() === appointmentValues.start.getTime() &&
-                event.end.getTime() === appointmentValues.end.getTime()
-              ) {
-                return {
-                  ...event,
-                  id: createdAppointmentData.id,
-                };
-              }
-              return event;
-            });
-          }
-
-          const newEvent: CalendarEvent = {
-            id: createdAppointmentData.id,
-            title: appointmentValues.status,
-            start: appointmentValues.start,
-            end: appointmentValues.end,
-            color: appointmentValues.status === "available" ? "emerald" : "sky",
-          };
-
-          return [...oldAppointments, newEvent];
-        },
-      );
-
-      form.reset();
-    },
-    onSettled: (data, error, appointmentValues) => {
-      if (appointmentValues.status === "booked") {
-        queryClient.invalidateQueries({
-          queryKey: ["appointments", "incoming"],
-        });
-      }
-
-      if (data?.id) {
-        queryClient.invalidateQueries({
-          queryKey: ["appointments", data.id],
-        });
-      }
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["appointments", "list", "incoming"],
+      });
 
       queryClient.invalidateQueries({
-        queryKey: ["appointments"],
-        exact: true,
+        queryKey: ["appointments", "list", "calendar"],
       });
     },
   });

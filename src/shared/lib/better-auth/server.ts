@@ -72,12 +72,7 @@ export const auth = betterAuth({
     }),
     twoFactor(),
     haveIBeenPwned(),
-    admin({
-      adminUserIds: [
-        "5GqZMnypnF17INIe1TnV99rPgmWQuXsf",
-        "N2VWAzV5Gukgr808wuJOl5MDOkXygjtN",
-      ],
-    }),
+    admin(),
   ],
   user: {
     additionalFields: {

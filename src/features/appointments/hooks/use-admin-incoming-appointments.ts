@@ -4,7 +4,7 @@ import { getIncomingAppointments } from "@/features/appointments/actions/get-inc
 
 export function useAdminIncomingAppointments() {
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: ["appointments", "incoming"],
+    queryKey: ["appointments", "list", "incoming"],
     queryFn: async () => {
       const { data, error } = await getIncomingAppointments();
 

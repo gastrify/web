@@ -53,13 +53,10 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
 
   const { mutate, isPending } = useBookAppointmentMutation();
 
-  const onSubmit = (values: BookAppointmentValues) =>
-    mutate(values, {
-      onSuccess: () => {
-        form.reset();
-        onClose();
-      },
-    });
+  const onSubmit = (values: BookAppointmentValues) => {
+    mutate(values);
+    onClose();
+  };
 
   const isPast = isBefore(new Date(event.start), new Date());
 

@@ -9,7 +9,7 @@ export const useUserAppointments = () => {
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     enabled: !!session?.user.id,
-    queryKey: ["appointments", session?.user.id],
+    queryKey: ["appointments", "list", "user", session?.user.id],
     queryFn: async () => {
       const { data, error } = await getUserAppointments(session!.user.id);
 

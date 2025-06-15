@@ -10,7 +10,11 @@ import type { ActionResponse } from "@/shared/types";
 import { isAdmin } from "@/shared/utils/is-admin";
 import { tryCatch } from "@/shared/utils/try-catch";
 
-import type { UpdateAppointmentValues } from "@/features/appointments/types";
+import type {
+  Appointment,
+  IncomingAppointment,
+  UpdateAppointmentValues,
+} from "@/features/appointments/types";
 import { updateAppointmentSchema } from "@/features/appointments/schemas/update-appointment-schema";
 
 export type UpdateAppointmentErrorCode =
@@ -24,7 +28,9 @@ export type UpdateAppointmentErrorCode =
 
 export async function updateAppointment(
   values: UpdateAppointmentValues,
-): Promise<ActionResponse<null, UpdateAppointmentErrorCode>> {
+): Promise<
+  ActionResponse<IncomingAppointment | Appointment, UpdateAppointmentErrorCode>
+> {
   //get the session and check if the user is authenticated
 
   const session = await auth.api.getSession({
@@ -103,17 +109,39 @@ export async function updateAppointment(
 
   //if booked, check if the patient exists and get the patient id
 
-  let patientId: string | null = null;
+  let patient: {
+    id: string;
+    name: string;
+    email: string;
+    identificationNumber: string;
+  } | null = null;
 
   if (status === "booked" && patientIdentificationNumber) {
-    const { data: patient } = await tryCatch(
+    const { data: patientData, error: patientDbError } = await tryCatch(
       db
-        .select({ id: user.id })
+        .select({
+          id: user.id,
+          identificationNumber: user.identificationNumber,
+          name: user.name,
+          email: user.email,
+        })
         .from(user)
         .where(eq(user.identificationNumber, patientIdentificationNumber)),
     );
 
-    if (!patient || patient.length !== 1) {
+    if (patientDbError) {
+      console.error(patientDbError);
+
+      return {
+        data: null,
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong fetching patient data",
+        },
+      };
+    }
+
+    if (!patientData || patientData.length !== 1) {
       return {
         data: null,
         error: {
@@ -124,7 +152,7 @@ export async function updateAppointment(
       };
     }
 
-    patientId = patient[0].id;
+    patient = patientData[0];
   }
 
   //TODO: check if patient does not have other appointments in the same time
@@ -168,18 +196,20 @@ export async function updateAppointment(
 
   //all good, update the appointment
 
-  const { error: dbUpdateAppointmentError } = await tryCatch(
-    db
-      .update(appointment)
-      .set({
-        start,
-        end,
-        status,
-        patientId: status === "booked" ? patientId : null,
-        type: status === "booked" ? type : null,
-      })
-      .where(eq(appointment.id, id)),
-  );
+  const { data: dbUpdateAppointmentData, error: dbUpdateAppointmentError } =
+    await tryCatch(
+      db
+        .update(appointment)
+        .set({
+          start,
+          end,
+          status,
+          patientId: status === "booked" && patient ? patient.id : null,
+          type: status === "booked" && patient ? type : null,
+        })
+        .where(eq(appointment.id, id))
+        .returning(),
+    );
 
   if (dbUpdateAppointmentError) {
     console.error(dbUpdateAppointmentError);
@@ -193,8 +223,22 @@ export async function updateAppointment(
     };
   }
 
+  if (status === "booked" && patient) {
+    return {
+      data: {
+        appointment: dbUpdateAppointmentData[0],
+        patient: {
+          identificationNumber: patient.identificationNumber,
+          name: patient.name,
+          email: patient.email,
+        },
+      },
+      error: null,
+    };
+  }
+
   return {
-    data: null,
+    data: dbUpdateAppointmentData[0],
     error: null,
   };
 }

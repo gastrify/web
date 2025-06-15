@@ -3,92 +3,88 @@ import { toast } from "sonner";
 
 import { bookAppointment } from "@/features/appointments/actions/book-appointment";
 import type {
+  Appointment,
   BookAppointmentValues,
   CalendarEvent,
 } from "@/features/appointments/types";
 import {
+  optimisticAdd,
   optimisticSet,
   rollback,
-} from "@/features/appointments/hooks/optimistic-helpers";
+} from "@/features/appointments/utils/optimistic-helpers";
 
 export const useBookAppointmentMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (values: BookAppointmentValues) => {
-      const { error } = await bookAppointment({
-        appointmentId: values.appointmentId,
-        patientId: values.patientId,
-        appointmentType: values.appointmentType,
-      });
+    mutationFn: async (variables: BookAppointmentValues) => {
+      const { error } = await bookAppointment(variables);
 
       if (error) return Promise.reject(error);
     },
-    onMutate: async (bookingValues) => {
-      await queryClient.cancelQueries({ queryKey: ["appointments"] });
+    onMutate: async (variables) => {
       await queryClient.cancelQueries({
-        queryKey: ["appointments", bookingValues.patientId],
+        queryKey: ["appointments", "list", "calendar"],
+      });
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", "list", "user", variables.patientId],
       });
 
-      const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
-        "appointments",
-      ]);
+      let bookedCalendarAppointment: CalendarEvent = {} as CalendarEvent;
 
-      const prevMainAppointments = optimisticSet<CalendarEvent>(
+      const previousCalendarAppointments = optimisticSet<CalendarEvent>(
         queryClient,
-        ["appointments"],
-        (oldAppointments) => {
-          return oldAppointments.map((appointment) => {
-            if (appointment.id === bookingValues.appointmentId) {
-              return {
-                ...appointment,
+        ["appointments", "list", "calendar"],
+        (oldCalendarAppointments) =>
+          oldCalendarAppointments.map((calendarAppointment) => {
+            if (calendarAppointment.id === variables.appointmentId) {
+              bookedCalendarAppointment = {
+                ...calendarAppointment,
                 title: "booked",
-                color: "sky" as const,
+                color: "sky",
               };
+
+              return bookedCalendarAppointment;
             }
-            return appointment;
-          });
+
+            return calendarAppointment;
+          }),
+      );
+
+      const previousUserAppointments = optimisticAdd<Appointment>(
+        queryClient,
+        ["appointments", "list", "user", variables.patientId],
+        {
+          id: variables.appointmentId,
+          start: bookedCalendarAppointment.start,
+          end: bookedCalendarAppointment.end,
+          status: "booked",
+          patientId: variables.patientId,
+          type: variables.appointmentType,
+          location: null,
+          meetingLink: null,
+          createdAt: new Date(),
         },
       );
 
-      const bookedAppointment = previousAppointments?.find(
-        (apt) => apt.id === bookingValues.appointmentId,
-      );
-
-      let prevUserAppointments: CalendarEvent[] = [];
-      if (bookedAppointment) {
-        prevUserAppointments = optimisticSet<CalendarEvent>(
-          queryClient,
-          ["appointments", bookingValues.patientId],
-          (oldUserAppointments) => {
-            const userAppointment = {
-              ...bookedAppointment,
-              title: "booked",
-              color: "sky" as const,
-            };
-
-            return [...oldUserAppointments, userAppointment];
-          },
-        );
-      }
-
       return {
-        previousAppointments: prevMainAppointments,
-        previousUserAppointments: prevUserAppointments,
+        previousCalendarAppointments,
+        previousUserAppointments,
       };
     },
-    onError: (_error, bookingValues, context) => {
-      if (context?.previousAppointments) {
+    onError: (_error, variables, context) => {
+      if (context?.previousCalendarAppointments) {
         rollback<CalendarEvent>(
           queryClient,
-          ["appointments"],
-          context.previousAppointments,
+          ["appointments", "list", "calendar"],
+          context.previousCalendarAppointments,
         );
       }
+
       if (context?.previousUserAppointments) {
-        rollback<CalendarEvent>(
+        rollback<Appointment>(
           queryClient,
-          ["appointments", bookingValues.patientId],
+          ["appointments", "list", "user", variables.patientId],
           context.previousUserAppointments,
         );
       }
@@ -97,23 +93,13 @@ export const useBookAppointmentMutation = () => {
         description: "Please try again later",
       });
     },
-    onSuccess: () => {
-      toast.success("Appointment booked successfully 🎉");
-    },
-    onSettled: (_data, _error, bookingVariables) => {
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["appointments", bookingVariables.patientId],
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["appointments", "incoming"] });
-
-      queryClient.invalidateQueries({
-        queryKey: ["appointments", bookingVariables.appointmentId],
+        queryKey: ["appointments", "list", "user", variables.patientId],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["appointments"],
-        exact: true,
+        queryKey: ["appointments", "list", "calendar"],
       });
     },
   });

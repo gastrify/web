@@ -11,7 +11,11 @@ import type { ActionResponse } from "@/shared/types";
 import { isAdmin } from "@/shared/utils/is-admin";
 import { tryCatch } from "@/shared/utils/try-catch";
 
-import type { CreateAppointmentValues } from "@/features/appointments/types";
+import type {
+  Appointment,
+  CreateAppointmentValues,
+  IncomingAppointment,
+} from "@/features/appointments/types";
 import { createAppointmentSchema } from "@/features/appointments/schemas/create-appointment-schema";
 
 export type CreateAppointmentErrorCode =
@@ -19,12 +23,14 @@ export type CreateAppointmentErrorCode =
   | "FORBIDDEN"
   | "INVALID_INPUT"
   | "CONFLICT"
-  | "SERVER_ERROR"
+  | "INTERNAL_SERVER_ERROR"
   | "USER_NOT_FOUND";
 
 export async function createAppointment(
   values: CreateAppointmentValues,
-): Promise<ActionResponse<{ id: string }, CreateAppointmentErrorCode>> {
+): Promise<
+  ActionResponse<IncomingAppointment | Appointment, CreateAppointmentErrorCode>
+> {
   //get the session and check if the user is authenticated
 
   const session = await auth.api.getSession({
@@ -76,12 +82,22 @@ export async function createAppointment(
 
   //if booked, check if the patient exists and get the patient id
 
-  let patientId: string | null = null;
+  let patient: {
+    id: string;
+    name: string;
+    email: string;
+    identificationNumber: string;
+  } | null = null;
 
   if (status === "booked" && patientIdentificationNumber) {
-    const { data: patient, error: patientDbError } = await tryCatch(
+    const { data: patientData, error: patientDbError } = await tryCatch(
       db
-        .select({ id: user.id })
+        .select({
+          id: user.id,
+          identificationNumber: user.identificationNumber,
+          name: user.name,
+          email: user.email,
+        })
         .from(user)
         .where(eq(user.identificationNumber, patientIdentificationNumber)),
     );
@@ -92,13 +108,13 @@ export async function createAppointment(
       return {
         data: null,
         error: {
-          code: "SERVER_ERROR",
+          code: "INTERNAL_SERVER_ERROR",
           message: "Something went wrong fetching patient data",
         },
       };
     }
 
-    if (!patient || patient.length !== 1) {
+    if (!patientData || patientData.length !== 1) {
       return {
         data: null,
         error: {
@@ -109,7 +125,7 @@ export async function createAppointment(
       };
     }
 
-    patientId = patient[0].id;
+    patient = patientData[0];
   }
 
   //TODO: check if patient does not have other appointments in the same time
@@ -130,7 +146,7 @@ export async function createAppointment(
     return {
       data: null,
       error: {
-        code: "SERVER_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
         message: "Failed to check conflicts",
       },
     };
@@ -156,10 +172,10 @@ export async function createAppointment(
           start,
           end,
           status,
-          patientId: status === "booked" ? patientId : null,
-          type: status === "booked" ? type : null,
+          patientId: status === "booked" && patient ? patient.id : null,
+          type: status === "booked" && patient ? type : null,
         })
-        .returning({ id: appointment.id }),
+        .returning(),
     );
 
   if (dbInsertAppointmentError) {
@@ -168,14 +184,28 @@ export async function createAppointment(
     return {
       data: null,
       error: {
-        code: "SERVER_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
         message: "Failed to create appointment",
       },
     };
   }
 
+  if (status === "booked" && patient) {
+    return {
+      data: {
+        appointment: dbInsertAppointmentData[0],
+        patient: {
+          identificationNumber: patient.identificationNumber,
+          name: patient.name,
+          email: patient.email,
+        },
+      },
+      error: null,
+    };
+  }
+
   return {
-    data: { id: dbInsertAppointmentData[0].id },
+    data: dbInsertAppointmentData[0],
     error: null,
   };
 }
