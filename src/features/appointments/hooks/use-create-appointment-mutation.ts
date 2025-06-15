@@ -8,7 +8,12 @@ import {
   createAppointment,
   type CreateAppointmentErrorCode,
 } from "@/features/appointments/actions/create-appointment";
-import type { CreateAppointmentValues } from "@/features/appointments/types";
+import type {
+  CreateAppointmentValues,
+  CalendarEvent,
+  IncomingAppointment,
+} from "@/features/appointments/types";
+import { optimisticAdd } from "@/features/appointments/utils/optimistic-helpers";
 
 interface Props {
   form: UseFormReturn<CreateAppointmentValues>;
@@ -18,14 +23,57 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (values: CreateAppointmentValues) => {
-      const { data, error } = await createAppointment(values);
+    mutationFn: async (variables: CreateAppointmentValues) => {
+      const { data, error } = await createAppointment(variables);
 
       if (error) return Promise.reject(error);
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
+      //check if data is an incoming appointment
+      if (
+        "patient" in data &&
+        variables.status === "booked" &&
+        variables.patientIdentificationNumber
+      ) {
+        optimisticAdd<IncomingAppointment>(
+          queryClient,
+          ["appointments", "list", "incoming"],
+          {
+            appointment: data.appointment,
+            patient: data.patient,
+          },
+        );
+
+        optimisticAdd<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "calendar"],
+          {
+            id: data.appointment.id,
+            title: "booked",
+            start: data.appointment.start,
+            end: data.appointment.end,
+            color: "sky",
+          },
+        );
+      }
+
+      //check if data is an available appointment
+      if ("id" in data && variables.status === "available") {
+        optimisticAdd<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "calendar"],
+          {
+            id: data.id,
+            title: "available",
+            start: variables.start,
+            end: variables.end,
+            color: "emerald",
+          },
+        );
+      }
+
       toast.success("Appointment created successfully 🎉");
     },
     onError: (error: ActionError<CreateAppointmentErrorCode>) => {
@@ -55,8 +103,13 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
-      queryClient.invalidateQueries({ queryKey: ["appointments", "incoming"] });
+      queryClient.invalidateQueries({
+        queryKey: ["appointments", "list", "incoming"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["appointments", "list", "calendar"],
+      });
     },
   });
 };

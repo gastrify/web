@@ -61,10 +61,7 @@ export const getIncomingAppointments = async (): Promise<
       .from(appointment)
       .innerJoin(user, eq(appointment.patientId, user.id))
       .where(
-        and(
-          eq(appointment.status, "booked"),
-          gte(appointment.start, new Date()),
-        ),
+        and(eq(appointment.status, "booked"), gte(appointment.end, new Date())),
       ),
   );
 

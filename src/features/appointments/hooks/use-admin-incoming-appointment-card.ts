@@ -8,7 +8,7 @@ export const useAdminIncomingAppointmentCard = () => {
   } = useDeleteAppointmentMutation();
 
   const handleDeleteAppointment = (appointmentId: string) =>
-    deleteAppointment(appointmentId);
+    deleteAppointment({ appointmentId });
 
   return {
     isDeleteAppointmentPending,

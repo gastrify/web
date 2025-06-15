@@ -1,6 +1,6 @@
 "use client";
 
-import { format, formatDuration, intervalToDuration } from "date-fns";
+import { format, formatDuration, intervalToDuration, isBefore } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderIcon } from "lucide-react";
@@ -53,13 +53,12 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
 
   const { mutate, isPending } = useBookAppointmentMutation();
 
-  const onSubmit = (values: BookAppointmentValues) =>
-    mutate(values, {
-      onSuccess: () => {
-        form.reset();
-        onClose();
-      },
-    });
+  const onSubmit = (values: BookAppointmentValues) => {
+    mutate(values);
+    onClose();
+  };
+
+  const isPast = isBefore(new Date(event.start), new Date());
 
   return (
     <Form {...form}>
@@ -68,7 +67,6 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Book Appointment</DialogTitle>
-
               <DialogDescription className="sr-only">
                 Book an appointment for this date
               </DialogDescription>
@@ -81,7 +79,6 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
                   {format(event.start, "PPp")}
                 </TypographyP>
               </div>
-
               <div className="flex flex-1 flex-col gap-2">
                 <span className="text-sm font-medium">Duration</span>
                 <TypographyP className="!m-0 text-sm leading-normal font-normal">
@@ -101,7 +98,6 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-4">
                   <FormLabel>Appointment Method</FormLabel>
-
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -112,20 +108,16 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
                         <FormControl>
                           <RadioGroupItem value="in-person" />
                         </FormControl>
-
                         <FormLabel className="font-normal">In-person</FormLabel>
                       </FormItem>
-
                       <FormItem className="flex items-center gap-3">
                         <FormControl>
                           <RadioGroupItem value="virtual" />
                         </FormControl>
-
                         <FormLabel className="font-normal">Virtual</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
@@ -136,15 +128,16 @@ export function BookingDialog({ event, isOpen, onClose }: BookingDialogProps) {
                 <Button type="button" variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
-
-                <Button
-                  type="submit"
-                  form="event-dialog-form"
-                  disabled={isPending}
-                >
-                  {isPending && <LoaderIcon className="animate-spin" />}
-                  Book Appointment
-                </Button>
+                {!isPast && (
+                  <Button
+                    type="submit"
+                    form="event-dialog-form"
+                    disabled={isPending}
+                  >
+                    {isPending && <LoaderIcon className="animate-spin" />}
+                    Book Appointment
+                  </Button>
+                )}
               </div>
             </DialogFooter>
           </DialogContent>

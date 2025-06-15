@@ -8,7 +8,7 @@ import { EventCalendar } from "@/features/appointments/components/event-calendar
 
 export function Appointments() {
   const { data, isError } = useQuery({
-    queryKey: ["appointments"],
+    queryKey: ["appointments", "list", "calendar"],
     queryFn: async () => {
       const { data, error } = await getAllAppointments();
 

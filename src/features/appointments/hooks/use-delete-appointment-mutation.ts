@@ -2,29 +2,84 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { deleteAppointment } from "@/features/appointments/actions/delete-appointment";
+import type {
+  CalendarEvent,
+  IncomingAppointment,
+} from "@/features/appointments/types";
+import {
+  optimisticRemove,
+  rollback,
+} from "@/features/appointments/utils/optimistic-helpers";
+
+interface DeleteAppointmentVariables {
+  appointmentId: string;
+}
 
 export const useDeleteAppointmentMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (appointmentId: string) => {
-      const { data, error } = await deleteAppointment(appointmentId);
+    mutationFn: async (variables: DeleteAppointmentVariables) => {
+      const { error } = await deleteAppointment(variables.appointmentId);
 
       if (error) return Promise.reject(error);
+    },
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", "list", "calendar"],
+      });
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", "list", "incoming"],
+      });
 
-      return data;
+      const previousCalendarAppointments = optimisticRemove<CalendarEvent>(
+        queryClient,
+        ["appointments", "list", "calendar"],
+        (appointment) => appointment.id === variables.appointmentId,
+      );
+
+      const previousIncomingAppointments =
+        optimisticRemove<IncomingAppointment>(
+          queryClient,
+          ["appointments", "list", "incoming"],
+          (incomingAppointment) =>
+            incomingAppointment.appointment.id === variables.appointmentId,
+        );
+
+      return { previousCalendarAppointments, previousIncomingAppointments };
     },
-    onSuccess: () => {
-      toast.success("Appointment deleted successfully 🎉");
+    onError: (_error, _variables, context) => {
+      if (context?.previousCalendarAppointments) {
+        rollback<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "calendar"],
+          context.previousCalendarAppointments,
+        );
+      }
+
+      if (context?.previousIncomingAppointments) {
+        rollback<IncomingAppointment>(
+          queryClient,
+          ["appointments", "list", "incoming"],
+          context.previousIncomingAppointments,
+        );
+      }
+
+      toast.error("Failed to delete appointment 😢", {
+        description: "Please try again later",
+      });
     },
-    onError: () => {
-      toast.error("Failed to delete appointment 😢");
-    },
-    onSettled: (_data, _error, appointmentId) => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
-      queryClient.invalidateQueries({ queryKey: ["appointments", "incoming"] });
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["appointments", appointmentId],
+        queryKey: ["appointments", "details", variables.appointmentId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["appointments", "list", "incoming"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["appointments", "list", "calendar"],
       });
     },
   });
