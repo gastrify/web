@@ -3,6 +3,10 @@ import { toast } from "sonner";
 
 import { deleteAppointment } from "@/features/appointments/actions/delete-appointment";
 import type { CalendarEvent } from "@/features/appointments/types";
+import {
+  optimisticSet,
+  rollback,
+} from "@/features/appointments/hooks/optimistic-helpers";
 
 export const useDeleteAppointmentMutation = () => {
   const queryClient = useQueryClient();
@@ -21,28 +25,22 @@ export const useDeleteAppointmentMutation = () => {
         queryKey: ["appointments", "incoming"],
       });
 
-      const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
-        "appointments",
-      ]);
-      const previousIncomingAppointments = queryClient.getQueryData([
-        "appointments",
-        "incoming",
-      ]);
-
-      queryClient.setQueryData<CalendarEvent[]>(
+      const previousAppointments = optimisticSet<CalendarEvent>(
+        queryClient,
         ["appointments"],
         (oldAppointments) => {
-          if (!oldAppointments) return [];
           return oldAppointments.filter(
             (appointment) => appointment.id !== appointmentId,
           );
         },
       );
 
-      queryClient.setQueryData<{ appointment: CalendarEvent }[]>(
+      const previousIncomingAppointments = optimisticSet<{
+        appointment: CalendarEvent;
+      }>(
+        queryClient,
         ["appointments", "incoming"],
         (oldIncomingAppointments) => {
-          if (!oldIncomingAppointments) return [];
           return oldIncomingAppointments.filter(
             (incomingAppointment) =>
               incomingAppointment.appointment.id !== appointmentId,
@@ -54,13 +52,15 @@ export const useDeleteAppointmentMutation = () => {
     },
     onError: (_error, _appointmentId, context) => {
       if (context?.previousAppointments) {
-        queryClient.setQueryData(
+        rollback<CalendarEvent>(
+          queryClient,
           ["appointments"],
           context.previousAppointments,
         );
       }
       if (context?.previousIncomingAppointments) {
-        queryClient.setQueryData(
+        rollback<{ appointment: CalendarEvent }>(
+          queryClient,
           ["appointments", "incoming"],
           context.previousIncomingAppointments,
         );
@@ -77,6 +77,11 @@ export const useDeleteAppointmentMutation = () => {
       });
 
       queryClient.invalidateQueries({ queryKey: ["appointments", "incoming"] });
+
+      queryClient.invalidateQueries({
+        queryKey: ["appointments"],
+        exact: true,
+      });
     },
   });
 };

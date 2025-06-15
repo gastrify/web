@@ -6,6 +6,10 @@ import type {
   BookAppointmentValues,
   CalendarEvent,
 } from "@/features/appointments/types";
+import {
+  optimisticSet,
+  rollback,
+} from "@/features/appointments/hooks/optimistic-helpers";
 
 export const useBookAppointmentMutation = () => {
   const queryClient = useQueryClient();
@@ -29,15 +33,11 @@ export const useBookAppointmentMutation = () => {
       const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
         "appointments",
       ]);
-      const previousUserAppointments = queryClient.getQueryData<
-        CalendarEvent[]
-      >(["appointments", bookingValues.patientId]);
 
-      queryClient.setQueryData<CalendarEvent[]>(
+      const prevMainAppointments = optimisticSet<CalendarEvent>(
+        queryClient,
         ["appointments"],
         (oldAppointments) => {
-          if (!oldAppointments) return [];
-
           return oldAppointments.map((appointment) => {
             if (appointment.id === bookingValues.appointmentId) {
               return {
@@ -54,8 +54,11 @@ export const useBookAppointmentMutation = () => {
       const bookedAppointment = previousAppointments?.find(
         (apt) => apt.id === bookingValues.appointmentId,
       );
+
+      let prevUserAppointments: CalendarEvent[] = [];
       if (bookedAppointment) {
-        queryClient.setQueryData<CalendarEvent[]>(
+        prevUserAppointments = optimisticSet<CalendarEvent>(
+          queryClient,
           ["appointments", bookingValues.patientId],
           (oldUserAppointments) => {
             const userAppointment = {
@@ -64,22 +67,27 @@ export const useBookAppointmentMutation = () => {
               color: "sky" as const,
             };
 
-            return [...(oldUserAppointments || []), userAppointment];
+            return [...oldUserAppointments, userAppointment];
           },
         );
       }
 
-      return { previousAppointments, previousUserAppointments };
+      return {
+        previousAppointments: prevMainAppointments,
+        previousUserAppointments: prevUserAppointments,
+      };
     },
     onError: (_error, bookingValues, context) => {
       if (context?.previousAppointments) {
-        queryClient.setQueryData(
+        rollback<CalendarEvent>(
+          queryClient,
           ["appointments"],
           context.previousAppointments,
         );
       }
       if (context?.previousUserAppointments) {
-        queryClient.setQueryData(
+        rollback<CalendarEvent>(
+          queryClient,
           ["appointments", bookingValues.patientId],
           context.previousUserAppointments,
         );
@@ -101,6 +109,11 @@ export const useBookAppointmentMutation = () => {
 
       queryClient.invalidateQueries({
         queryKey: ["appointments", bookingVariables.appointmentId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["appointments"],
+        exact: true,
       });
     },
   });

@@ -12,6 +12,10 @@ import type {
   CreateAppointmentValues,
   CalendarEvent,
 } from "@/features/appointments/types";
+import {
+  optimisticSet,
+  rollback,
+} from "@/features/appointments/hooks/optimistic-helpers";
 
 interface Props {
   form: UseFormReturn<CreateAppointmentValues>;
@@ -35,15 +39,10 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
 
       await queryClient.cancelQueries({ queryKey: ["appointments"] });
 
-      const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
-        "appointments",
-      ]);
-
-      queryClient.setQueryData<CalendarEvent[]>(
+      const previousAppointments = optimisticSet<CalendarEvent>(
+        queryClient,
         ["appointments"],
         (oldAppointments) => {
-          if (!oldAppointments) return [];
-
           const optimisticEvent: CalendarEvent = {
             id: `temp-${Date.now()}`,
             title: "available",
@@ -67,7 +66,8 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
         context?.previousAppointments &&
         appointmentValues.status === "available"
       ) {
-        queryClient.setQueryData(
+        rollback<CalendarEvent>(
+          queryClient,
           ["appointments"],
           context.previousAppointments,
         );
@@ -101,11 +101,10 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
     onSuccess: (createdAppointmentData, appointmentValues) => {
       toast.success("Appointment created successfully 🎉");
 
-      queryClient.setQueryData<CalendarEvent[]>(
+      optimisticSet<CalendarEvent>(
+        queryClient,
         ["appointments"],
         (oldAppointments) => {
-          if (!oldAppointments) return [];
-
           if (
             appointmentValues.status === "available" &&
             createdAppointmentData?.id
@@ -151,6 +150,11 @@ export const useCreateAppointmentMutation = ({ form }: Props) => {
           queryKey: ["appointments", data.id],
         });
       }
+
+      queryClient.invalidateQueries({
+        queryKey: ["appointments"],
+        exact: true,
+      });
     },
   });
 };

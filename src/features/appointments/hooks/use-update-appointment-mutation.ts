@@ -12,6 +12,10 @@ import type {
   UpdateAppointmentValues,
   CalendarEvent,
 } from "@/features/appointments/types";
+import {
+  optimisticSet,
+  rollback,
+} from "@/features/appointments/hooks/optimistic-helpers";
 
 interface Props {
   form: UseFormReturn<UpdateAppointmentValues>;
@@ -31,66 +35,43 @@ export const useUpdateAppointmentMutation = ({ form }: Props) => {
     onMutate: async (updatedAppointmentValues) => {
       await queryClient.cancelQueries({ queryKey: ["appointments"] });
 
-      const previousAppointments = queryClient.getQueryData<CalendarEvent[]>([
-        "appointments",
-      ]);
-      const currentAppointment = previousAppointments?.find(
+      const previousAppointments = optimisticSet<CalendarEvent>(
+        queryClient,
+        ["appointments"],
+        (oldAppointments) => {
+          const currentAppointment = oldAppointments.find(
+            (apt) => apt.id === updatedAppointmentValues.id,
+          );
+
+          if (!currentAppointment) return oldAppointments;
+
+          return oldAppointments.map((appointment) => {
+            if (appointment.id === updatedAppointmentValues.id) {
+              return {
+                ...appointment,
+                title: updatedAppointmentValues.status,
+                start: updatedAppointmentValues.start,
+                end: updatedAppointmentValues.end,
+                color:
+                  updatedAppointmentValues.status === "available"
+                    ? "emerald"
+                    : "sky",
+              };
+            }
+            return appointment;
+          });
+        },
+      );
+
+      const currentAppointment = previousAppointments.find(
         (apt) => apt.id === updatedAppointmentValues.id,
       );
 
-      const isChangingFromBookedToAvailable =
+      const wasOptimisticUpdate =
         currentAppointment?.title === "booked" &&
         updatedAppointmentValues.status === "available";
 
-      if (isChangingFromBookedToAvailable) {
-        queryClient.setQueryData<CalendarEvent[]>(
-          ["appointments"],
-          (oldAppointments) => {
-            if (!oldAppointments) return [];
-
-            return oldAppointments.map((appointment) => {
-              if (appointment.id === updatedAppointmentValues.id) {
-                return {
-                  ...appointment,
-                  title: "available",
-                  start: updatedAppointmentValues.start,
-                  end: updatedAppointmentValues.end,
-                  color: "emerald" as const,
-                };
-              }
-              return appointment;
-            });
-          },
-        );
-      } else if (currentAppointment) {
-        queryClient.setQueryData<CalendarEvent[]>(
-          ["appointments"],
-          (oldAppointments) => {
-            if (!oldAppointments) return [];
-
-            return oldAppointments.map((appointment) => {
-              if (appointment.id === updatedAppointmentValues.id) {
-                return {
-                  ...appointment,
-                  title: updatedAppointmentValues.status,
-                  start: updatedAppointmentValues.start,
-                  end: updatedAppointmentValues.end,
-                  color:
-                    updatedAppointmentValues.status === "available"
-                      ? "emerald"
-                      : "sky",
-                };
-              }
-              return appointment;
-            });
-          },
-        );
-      }
-
-      return {
-        previousAppointments,
-        wasOptimisticUpdate: isChangingFromBookedToAvailable,
-      };
+      return { previousAppointments, wasOptimisticUpdate };
     },
     onError: (
       error: ActionError<UpdateAppointmentErrorCode>,
@@ -98,7 +79,8 @@ export const useUpdateAppointmentMutation = ({ form }: Props) => {
       context,
     ) => {
       if (context?.previousAppointments && context.wasOptimisticUpdate) {
-        queryClient.setQueryData(
+        rollback<CalendarEvent>(
+          queryClient,
           ["appointments"],
           context.previousAppointments,
         );
@@ -152,6 +134,11 @@ export const useUpdateAppointmentMutation = ({ form }: Props) => {
           queryKey: ["appointments", "incoming"],
         });
       }
+
+      queryClient.invalidateQueries({
+        queryKey: ["appointments"],
+        exact: true,
+      });
     },
   });
 };
