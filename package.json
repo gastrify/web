@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.53.0",
     "@tailwindcss/postcss": "^4.1.10",
     "@tanstack/eslint-plugin-query": "^5.78.0",
     "@tanstack/react-query-devtools": "^5.80.7",
