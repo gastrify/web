@@ -32,7 +32,7 @@ export function NotificationsForm() {
       </div>
 
       <TypographyMuted className="text-center">
-        {t("notifications.commingSoon")}
+        {t("notifications.comingSoon")}
       </TypographyMuted>
     </>
   );
