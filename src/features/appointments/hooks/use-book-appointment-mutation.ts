@@ -12,9 +12,13 @@ import {
   optimisticSet,
   rollback,
 } from "@/features/appointments/utils/optimistic-helpers";
+import { useSession } from "@/shared/hooks/use-session";
+import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
 
 export const useBookAppointmentMutation = () => {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+  const { success } = useAppointmentsTranslations();
 
   return useMutation({
     mutationFn: async (variables: BookAppointmentValues) => {
@@ -24,10 +28,7 @@ export const useBookAppointmentMutation = () => {
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
-        queryKey: ["appointments", "list", "calendar"],
-      });
-      await queryClient.cancelQueries({
-        queryKey: ["appointments", "list", "user", variables.patientId],
+        queryKey: ["appointments", "list"],
       });
 
       let bookedCalendarAppointment: CalendarEvent = {} as CalendarEvent;
@@ -45,6 +46,23 @@ export const useBookAppointmentMutation = () => {
               };
 
               return bookedCalendarAppointment;
+            }
+
+            return calendarAppointment;
+          }),
+      );
+
+      const previousAllAppointments = optimisticSet<CalendarEvent>(
+        queryClient,
+        ["appointments", "list", "all", session?.user?.id],
+        (oldCalendarAppointments) =>
+          oldCalendarAppointments.map((calendarAppointment) => {
+            if (calendarAppointment.id === variables.appointmentId) {
+              return {
+                ...calendarAppointment,
+                title: "booked",
+                color: "sky",
+              };
             }
 
             return calendarAppointment;
@@ -69,8 +87,14 @@ export const useBookAppointmentMutation = () => {
 
       return {
         previousCalendarAppointments,
+        previousAllAppointments,
         previousUserAppointments,
       };
+    },
+    onSuccess: () => {
+      toast.success(success.bookedSuccessfully, {
+        description: success.bookedDescription,
+      });
     },
     onError: (_error, variables, context) => {
       if (context?.previousCalendarAppointments) {
@@ -78,6 +102,14 @@ export const useBookAppointmentMutation = () => {
           queryClient,
           ["appointments", "list", "calendar"],
           context.previousCalendarAppointments,
+        );
+      }
+
+      if (context?.previousAllAppointments) {
+        rollback<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "all", session?.user?.id],
+          context.previousAllAppointments,
         );
       }
 
@@ -93,13 +125,10 @@ export const useBookAppointmentMutation = () => {
         description: "Please try again later",
       });
     },
-    onSettled: (_data, _error, variables) => {
+    onSettled: () => {
+      // Invalidate all appointment-related queries
       queryClient.invalidateQueries({
-        queryKey: ["appointments", "list", "user", variables.patientId],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["appointments", "list", "calendar"],
+        queryKey: ["appointments", "list"],
       });
     },
   });

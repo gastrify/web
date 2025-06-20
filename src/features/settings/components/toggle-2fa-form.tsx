@@ -1,6 +1,7 @@
 "use client";
 
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -21,6 +22,8 @@ import { QRCodeDialog } from "@/features/settings/components/qr-code-dialog";
 import { useToggle2FAForm } from "@/features/settings/hooks/use-toggle-2fa-form";
 
 export const Toggle2FAForm = () => {
+  //const t = useTranslation("Settings");
+  const { t } = useTranslation("settingsProfile");
   const {
     form,
     onSubmit,
@@ -51,7 +54,7 @@ export const Toggle2FAForm = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <TypographyH4>Two-factor authentication</TypographyH4>
+          <TypographyH4>{t("security.twoFactorTitle")}</TypographyH4>
 
           <div className="space-y-4">
             <FormField
@@ -60,9 +63,11 @@ export const Toggle2FAForm = () => {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Enable 2FA</FormLabel>
+                    <FormLabel className="text-base">
+                      {t("security.enableTwoFactor")}
+                    </FormLabel>
                     <FormDescription>
-                      Add an extra layer of security to your account.
+                      {t("security.twoFactorDescription")}
                     </FormDescription>
                   </div>
 
@@ -107,12 +112,14 @@ export const Toggle2FAForm = () => {
               render={({ field }) => (
                 <FormItem className="bg-destructive/40 flex flex-col items-start gap-4 rounded-lg p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Password</FormLabel>
+                    <FormLabel className="text-base">
+                      {t("security.password2FA")}
+                    </FormLabel>
 
                     <FormDescription>
-                      In order to{" "}
-                      {form.getValues("enable2FA") ? "enable" : "disable"} 2FA,
-                      please enter your password.
+                      {t("security.twoFactorDescription")}
+                      {/* {" "} */}
+                      {/* {form.getValues("enable2FA") ? "enable" : "disable"}  */}
                     </FormDescription>
                   </div>
 
@@ -128,7 +135,10 @@ export const Toggle2FAForm = () => {
                   >
                     {isPending && <LoaderIcon className="animate-spin" />}
                     {isError && <RotateCcwIcon />}
-                    {form.getValues("enable2FA") ? "Enable" : "Disable"} 2FA
+                    {form.getValues("enable2FA")
+                      ? t("security.enableButton2FA")
+                      : t("security.disableButton2FA")}{" "}
+                    2FA
                   </Button>
                 </FormItem>
               )}

@@ -1,0 +1,19 @@
+{
+  "title": "Notificaciones",
+  "comingSoon": "Próximamente...",
+  "description": "Aquí podrás ver todas tus notificaciones y alertas importantes.",
+  "noNotifications": "No tienes notificaciones",
+  "markAllAsRead": "Marcar todas como leídas",
+  "clearAll": "Limpiar todas",
+  "types": {
+    "appointment": "Cita",
+    "reminder": "Recordatorio",
+    "system": "Sistema",
+    "update": "Actualización"
+  },
+  "actions": {
+    "markAsRead": "Marcar como leída",
+    "delete": "Eliminar",
+    "view": "Ver"
+  }
+}

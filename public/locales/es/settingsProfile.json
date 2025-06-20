@@ -1,0 +1,76 @@
+{
+  "titleSettings": "Configuración",
+  "descriptionSettings": "Administra la configuración de tu cuenta y preferencias de correo electrónico.",
+  "account": {
+    "title": "Cuenta",
+    "description": "Actualiza la configuración de tu cuenta.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tucorreo@ejemplo.com",
+    "emailDescription": "Esta es la dirección de correo que usaremos para contactarte. No será visible públicamente.",
+    "retry": "Reintentar",
+    "identification": "Número de Identificación",
+    "identificationDescription": "Este es su número de identificación. No será visible públicamente.",
+    "name": "Nombre",
+    "nameDescription": "Este es tu nombre público. Puede ser tu nombre real o un seudónimo.",
+    "languagePreference": "Preferencia de idioma",
+    "languageDescription": "Selecciona el idioma en el que prefieres usar la aplicación.",
+    "english": "Inglés",
+    "spanish": "Español"
+  },
+  "security": {
+    "userAgent": "Agente de usuario",
+    "current": "Actual",
+    "ipAddress": "Dirección IP",
+    "createdAt": "Creado el",
+    "updatedAt": "Actualizado el",
+    "expiresAt": "Expira el",
+    "revoke": "Revocar",
+    "activeSessions": "Sesiones activas",
+    "retry": "Reintentar",
+    "passwordTitle": "Cambiar la Contraseña",
+    "newPassword": "Nueva Contraseña",
+    "passwordDescription": "Si cambia su contraseña, se cerrarán todas sus sesiones activas.",
+    "twoFactorTitle": "Autenticación de dos factores",
+    "enableTwoFactor": "Habilitar 2FA",
+    "twoFactorDescription": "Añade una capa adicional de seguridad a tu cuenta",
+    "securityTitle": "Seguridad",
+    "securityDescription": "Actualice la configuración de seguridad de su cuenta.",
+    "password2FA": "Contraseña",
+    "passwordDescription2FA": "Para habilitar 2FA, ingrese su contraseña.",
+    "enableButton2FA": "Habilitar",
+    "disableButton2FA": "Deshabilitar"
+  },
+  "notifications": {
+    "notificationTitle": "Notificaciones",
+    "notificationDescription": "Configura cómo recibes notificaciones.",
+    "commingSoon": "Muy Pronto....."
+  },
+  "sidebar": {
+    "account": "Cuenta",
+    "security": "Seguridad",
+    "notifications": "Notificaciones"
+  },
+  "qrCode": {
+    "scanQrTitle": "Escanear código QR",
+    "manualSecretDescription": "Escanea este código QR con tu aplicación de autenticación o ingresa el secreto manualmente.",
+    "otpLabel": "Contraseña de un solo uso",
+    "otpDescription": "Ingresa el código de 6 dígitos de tu aplicación de autenticación.",
+    "verifyButton": "Verificar"
+  },
+  "backupCodes": {
+    "backupCodesTitle": "Códigos de respaldo",
+    "generateBackupCodes": "Generar códigos de respaldo",
+    "generateButton": "Generar",
+    "generateBackupCodesDescription": "Genera un conjunto de códigos de respaldo para usar si pierdes tu aplicación de autenticación. Generar nuevos códigos invalidará los anteriores.",
+    "password": "Contraseña",
+    "passwordDescription": "Ingresa tu contraseña actual para generar nuevos códigos de respaldo.",
+    "downloadBackupCodesTitle": "Descargar códigos de respaldo",
+    "downloadBackupCodesDescription": "Guarda estos códigos en un lugar seguro. Cada código puede usarse una sola vez.",
+    "downloadBackupCodesButton": "Descargar códigos"
+  },
+  "profile": {
+    "title": "Perfil",
+    "description": "Maneja tu información personal",
+    "comingSoon": "Muy Pronto..."
+  }
+}

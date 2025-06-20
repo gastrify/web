@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { ActionError } from "@/shared/types";
+import { useSession } from "@/shared/hooks/use-session";
 
 import {
   updateAppointment,
@@ -17,6 +18,7 @@ import {
   optimisticAdd,
   optimisticRemove,
   optimisticUpdate,
+  rollback,
 } from "@/features/appointments/utils/optimistic-helpers";
 
 interface Props {
@@ -25,6 +27,7 @@ interface Props {
 
 export const useUpdateAppointmentMutation = ({ form }: Props) => {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
 
   return useMutation({
     mutationFn: async (variables: UpdateAppointmentValues) => {
@@ -34,60 +37,166 @@ export const useUpdateAppointmentMutation = ({ form }: Props) => {
 
       return data;
     },
-    onSuccess: async (data, variables) => {
-      //check if data is an available appointment
-      if ("id" in data && variables.status === "available") {
+    onMutate: async (variables) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: ["appointments", "list"],
+      });
+
+      // Store previous data for rollback
+      const previousAllAppointments =
+        queryClient.getQueryData<CalendarEvent[]>([
+          "appointments",
+          "list",
+          "all",
+          session?.user?.id,
+        ]) || [];
+      const previousCalendarAppointments =
+        queryClient.getQueryData<CalendarEvent[]>([
+          "appointments",
+          "list",
+          "calendar",
+        ]) || [];
+      const previousIncomingAppointments =
+        queryClient.getQueryData<IncomingAppointment[]>([
+          "appointments",
+          "list",
+          "incoming",
+        ]) || [];
+
+      // Update optimistically based on status
+      if (variables.status === "available") {
+        // Update to available
         optimisticUpdate<CalendarEvent>(
           queryClient,
-          ["appointments", "list", "calendar"],
-          (calendarAppointment) => calendarAppointment.id === data.id,
+          ["appointments", "list", "all", session?.user?.id],
+          (calendarAppointment) => calendarAppointment.id === variables.id,
           (calendarAppointment) => ({
             ...calendarAppointment,
             title: "available",
             color: "emerald",
+            start: variables.start,
+            end: variables.end,
           }),
         );
 
+        optimisticUpdate<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "calendar"],
+          (calendarAppointment) => calendarAppointment.id === variables.id,
+          (calendarAppointment) => ({
+            ...calendarAppointment,
+            title: "available",
+            color: "emerald",
+            start: variables.start,
+            end: variables.end,
+          }),
+        );
+
+        // Remove from incoming appointments
         optimisticRemove<IncomingAppointment>(
           queryClient,
           ["appointments", "list", "incoming"],
           (incomingAppointment) =>
-            incomingAppointment.appointment.id === data.id,
+            incomingAppointment.appointment.id === variables.id,
         );
-      }
-
-      //check if data is an incoming appointment
-      if (
-        "patient" in data &&
+      } else if (
         variables.status === "booked" &&
         variables.patientIdentificationNumber
       ) {
+        // Update to booked
+        const isAdmin = session?.user?.role === "admin";
+        optimisticUpdate<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "all", session?.user?.id],
+          (calendarAppointment) => calendarAppointment.id === variables.id,
+          (calendarAppointment) => ({
+            ...calendarAppointment,
+            title: isAdmin ? "Cita Reservada" : "Reservado",
+            color: "sky",
+            start: variables.start,
+            end: variables.end,
+          }),
+        );
+
         optimisticUpdate<CalendarEvent>(
           queryClient,
           ["appointments", "list", "calendar"],
-          (calendarAppointment) =>
-            calendarAppointment.id === data.appointment.id,
+          (calendarAppointment) => calendarAppointment.id === variables.id,
           (calendarAppointment) => ({
             ...calendarAppointment,
             title: "booked",
             color: "sky",
+            start: variables.start,
+            end: variables.end,
           }),
         );
+
+        // Add to incoming appointments
+        const optimisticIncoming: IncomingAppointment = {
+          appointment: {
+            id: variables.id,
+            start: variables.start,
+            end: variables.end,
+            status: "booked",
+            patientId: variables.patientIdentificationNumber,
+            type: variables.type || "in-person",
+            meetingLink: null,
+            location: null,
+            createdAt: new Date(),
+          },
+          patient: {
+            name: "Cargando...",
+            identificationNumber: variables.patientIdentificationNumber,
+            email: "cargando@example.com",
+          },
+        };
 
         optimisticAdd<IncomingAppointment>(
           queryClient,
           ["appointments", "list", "incoming"],
-          {
-            appointment: data.appointment,
-            patient: data.patient,
-          },
+          optimisticIncoming,
         );
       }
 
+      return {
+        previousAllAppointments,
+        previousCalendarAppointments,
+        previousIncomingAppointments,
+      };
+    },
+    onSuccess: () => {
       toast.success("Appointment updated successfully 🎉");
     },
-    onError: (error: ActionError<UpdateAppointmentErrorCode>) => {
-      console.log(error);
+    onError: (
+      error: ActionError<UpdateAppointmentErrorCode>,
+      variables,
+      context,
+    ) => {
+      // Rollback optimistic updates
+      if (context?.previousAllAppointments) {
+        rollback<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "all", session?.user?.id],
+          context.previousAllAppointments,
+        );
+      }
+
+      if (context?.previousCalendarAppointments) {
+        rollback<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "calendar"],
+          context.previousCalendarAppointments,
+        );
+      }
+
+      if (context?.previousIncomingAppointments) {
+        rollback<IncomingAppointment>(
+          queryClient,
+          ["appointments", "list", "incoming"],
+          context.previousIncomingAppointments,
+        );
+      }
 
       switch (error.code) {
         case "CONFLICT":
@@ -114,17 +223,10 @@ export const useUpdateAppointmentMutation = ({ form }: Props) => {
           });
       }
     },
-    onSettled: (_data, _error, variables) => {
+    onSettled: () => {
+      // Invalidate all appointment-related queries
       queryClient.invalidateQueries({
-        queryKey: ["appointments", "details", variables.id],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["appointments", "list", "incoming"],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["appointments", "list", "calendar"],
+        queryKey: ["appointments", "list"],
       });
     },
   });

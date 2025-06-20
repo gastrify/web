@@ -6,6 +6,8 @@ import { addDays, format, isToday } from "date-fns";
 
 import { AgendaDaysToShow } from "@/features/appointments/constants";
 import { EventItem } from "@/features/appointments/components/event-item";
+import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 import type { CalendarEvent } from "@/features/appointments/types";
 import { getAgendaEventsForDay } from "@/features/appointments/utils/get-agenda-events-for-day";
 
@@ -20,6 +22,9 @@ export function AgendaView({
   events,
   onEventSelect,
 }: AgendaViewProps) {
+  const { agenda } = useAppointmentsTranslations();
+  const { locale } = useDateConfig();
+
   // Show events for the next days based on constant
   const days = useMemo(() => {
     return Array.from({ length: AgendaDaysToShow }, (_, i) =>
@@ -45,10 +50,8 @@ export function AgendaView({
             size={32}
             className="text-muted-foreground/50 mb-2"
           />
-          <h3 className="text-lg font-medium">No events found</h3>
-          <p className="text-muted-foreground">
-            There are no events scheduled for this time period.
-          </p>
+          <h3 className="text-lg font-medium">{agenda.noEventsFound}</h3>
+          <p className="text-muted-foreground">{agenda.noEventsDescription}</p>
         </div>
       ) : (
         days.map((day) => {
@@ -65,7 +68,7 @@ export function AgendaView({
                 className="bg-background absolute -top-3 left-0 flex h-6 items-center pe-4 text-[10px] uppercase data-today:font-medium sm:pe-4 sm:text-xs"
                 data-today={isToday(day) || undefined}
               >
-                {format(day, "d MMM, EEEE")}
+                {format(day, "d MMM, EEEE", { locale })}
               </span>
               <div className="mt-6 space-y-2">
                 {dayEvents.map((event) => (

@@ -3,10 +3,18 @@
 import { useMemo, memo } from "react";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import { differenceInMinutes, format, getMinutes, isPast } from "date-fns";
+import {
+  differenceInMinutes,
+  format,
+  getMinutes,
+  isPast,
+  Locale,
+} from "date-fns";
 
 import { cn } from "@/shared/utils/cn";
 
+import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 import type { CalendarEvent } from "@/features/appointments/types";
 import { getBorderRadiusClasses } from "@/features/appointments/utils/get-border-radius-classes";
 import { getEventColorClasses } from "@/features/appointments/utils/get-event-color-classes";
@@ -15,8 +23,10 @@ import { getEventColorClasses } from "@/features/appointments/utils/get-event-co
 // 'h' - hours (1-12)
 // 'a' - am/pm
 // ':mm' - minutes with leading zero (only if the token 'mm' is present)
-const formatTimeWithOptionalMinutes = (date: Date) => {
-  return format(date, getMinutes(date) === 0 ? "ha" : "h:mma").toLowerCase();
+const formatTimeWithOptionalMinutes = (date: Date, locale: Locale) => {
+  return format(date, getMinutes(date) === 0 ? "ha" : "h:mma", {
+    locale,
+  }).toLowerCase();
 };
 
 interface EventWrapperProps {
@@ -113,7 +123,17 @@ export const EventItem = memo(function EventItem({
   onMouseDown,
   onTouchStart,
 }: EventItemProps) {
+  const { create } = useAppointmentsTranslations();
+  const { locale } = useDateConfig();
+
   const eventColor = event.color;
+
+  // Translate event title if it's a status
+  const translatedTitle = useMemo(() => {
+    if (event.title === "available") return create.available;
+    if (event.title === "booked") return create.booked;
+    return event.title;
+  }, [event.title, create.available, create.booked]);
 
   // Use the provided currentTime (for dragging) or the event's actual time
   const displayStart = useMemo(() => {
@@ -137,11 +157,11 @@ export const EventItem = memo(function EventItem({
   const getEventTime = () => {
     // For short events (less than 45 minutes), only show start time
     if (durationMinutes < 45) {
-      return formatTimeWithOptionalMinutes(displayStart);
+      return formatTimeWithOptionalMinutes(displayStart, locale);
     }
 
     // For longer events, show both start and end time
-    return `${formatTimeWithOptionalMinutes(displayStart)} - ${formatTimeWithOptionalMinutes(displayEnd)}`;
+    return `${formatTimeWithOptionalMinutes(displayStart, locale)} - ${formatTimeWithOptionalMinutes(displayEnd, locale)}`;
   };
 
   if (view === "month") {
@@ -162,7 +182,7 @@ export const EventItem = memo(function EventItem({
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
-        {children || <span className="truncate">{event.title}</span>}
+        {children || <span className="truncate">{translatedTitle}</span>}
       </EventWrapper>
     );
   }
@@ -189,16 +209,16 @@ export const EventItem = memo(function EventItem({
       >
         {durationMinutes < 45 ? (
           <div className="truncate">
-            {event.title}{" "}
+            {translatedTitle}{" "}
             {showTime && (
               <span className="opacity-70">
-                {formatTimeWithOptionalMinutes(displayStart)}
+                {formatTimeWithOptionalMinutes(displayStart, locale)}
               </span>
             )}
           </div>
         ) : (
           <>
-            <div className="truncate font-medium">{event.title}</div>
+            <div className="truncate font-medium">{translatedTitle}</div>
             {showTime && (
               <div className="truncate font-normal opacity-70 sm:text-[11px]">
                 {getEventTime()}
@@ -225,11 +245,11 @@ export const EventItem = memo(function EventItem({
       {...dndListeners}
       {...dndAttributes}
     >
-      <div className="text-sm font-medium">{event.title}</div>
+      <div className="text-sm font-medium">{translatedTitle}</div>
       <div className="text-xs opacity-70">
         <span className="uppercase">
-          {formatTimeWithOptionalMinutes(displayStart)} -{" "}
-          {formatTimeWithOptionalMinutes(displayEnd)}
+          {formatTimeWithOptionalMinutes(displayStart, locale)} -{" "}
+          {formatTimeWithOptionalMinutes(displayEnd, locale)}
         </span>
       </div>
     </button>

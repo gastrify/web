@@ -46,6 +46,8 @@ import { MonthView } from "@/features/appointments/components/month-view";
 import { WeekView } from "@/features/appointments/components/week-view";
 import { UpdateEventDialog } from "@/features/appointments/components/update-event-dialog";
 import { CalendarDndProvider } from "@/features/appointments/providers/calendar-dnd-provider";
+import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 import type {
   CalendarEvent,
   CalendarView,
@@ -63,6 +65,8 @@ export function EventCalendar({
   className,
   initialView = "month",
 }: EventCalendarProps) {
+  const { calendar, errors, shortcuts } = useAppointmentsTranslations();
+  const { locale, weekStartsOn } = useDateConfig();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>(initialView);
   const [createEventData, setCreateEventData] = useState<{
@@ -180,33 +184,36 @@ export function EventCalendar({
 
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
     // Show toast notification when an event is updated via drag and drop
-    toast.success(`Event "${updatedEvent.title}" moved`, {
-      description: format(new Date(updatedEvent.start), "MMM d, yyyy"),
+    toast.success(errors.eventMoved.replace("{{title}}", updatedEvent.title), {
+      description: errors.eventMovedDescription.replace(
+        "{{date}}",
+        format(new Date(updatedEvent.start), "MMM d, yyyy"),
+      ),
     });
   };
 
   const viewTitle = useMemo(() => {
     if (view === "month") {
-      return format(currentDate, "MMMM yyyy");
+      return format(currentDate, "MMMM yyyy", { locale });
     } else if (view === "week") {
-      const start = startOfWeek(currentDate, { weekStartsOn: 0 });
-      const end = endOfWeek(currentDate, { weekStartsOn: 0 });
+      const start = startOfWeek(currentDate, { weekStartsOn });
+      const end = endOfWeek(currentDate, { weekStartsOn });
       if (isSameMonth(start, end)) {
-        return format(start, "MMMM yyyy");
+        return format(start, "MMMM yyyy", { locale });
       } else {
-        return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`;
+        return `${format(start, "MMM", { locale })} - ${format(end, "MMM yyyy", { locale })}`;
       }
     } else if (view === "day") {
       return (
         <>
           <span className="min-[480px]:hidden" aria-hidden="true">
-            {format(currentDate, "MMM d, yyyy")}
+            {format(currentDate, "MMM d, yyyy", { locale })}
           </span>
           <span className="max-[479px]:hidden min-md:hidden" aria-hidden="true">
-            {format(currentDate, "MMMM d, yyyy")}
+            {format(currentDate, "MMMM d, yyyy", { locale })}
           </span>
           <span className="max-md:hidden">
-            {format(currentDate, "EEE MMMM d, yyyy")}
+            {format(currentDate, "EEE MMMM d, yyyy", { locale })}
           </span>
         </>
       );
@@ -216,14 +223,14 @@ export function EventCalendar({
       const end = addDays(currentDate, AgendaDaysToShow - 1);
 
       if (isSameMonth(start, end)) {
-        return format(start, "MMMM yyyy");
+        return format(start, "MMMM yyyy", { locale });
       } else {
-        return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`;
+        return `${format(start, "MMM", { locale })} - ${format(end, "MMM yyyy", { locale })}`;
       }
     } else {
-      return format(currentDate, "MMMM yyyy");
+      return format(currentDate, "MMMM yyyy", { locale });
     }
-  }, [currentDate, view]);
+  }, [currentDate, view, locale, weekStartsOn]);
 
   return (
     <div
@@ -254,14 +261,14 @@ export function EventCalendar({
                 size={16}
                 aria-hidden="true"
               />
-              <span className="max-[479px]:sr-only">Today</span>
+              <span className="max-[479px]:sr-only">{calendar.today}</span>
             </Button>
             <div className="flex items-center sm:gap-2">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handlePrevious}
-                aria-label="Previous"
+                aria-label={calendar.previous}
               >
                 <ChevronLeftIcon size={16} aria-hidden="true" />
               </Button>
@@ -269,7 +276,7 @@ export function EventCalendar({
                 variant="ghost"
                 size="icon"
                 onClick={handleNext}
-                aria-label="Next"
+                aria-label={calendar.next}
               >
                 <ChevronRightIcon size={16} aria-hidden="true" />
               </Button>
@@ -284,10 +291,22 @@ export function EventCalendar({
                 <Button variant="outline" className="gap-1.5 max-[479px]:h-8">
                   <span>
                     <span className="min-[480px]:hidden" aria-hidden="true">
-                      {view.charAt(0).toUpperCase()}
+                      {view === "month"
+                        ? shortcuts.month
+                        : view === "week"
+                          ? shortcuts.week
+                          : view === "day"
+                            ? shortcuts.day
+                            : shortcuts.agenda}
                     </span>
                     <span className="max-[479px]:sr-only">
-                      {view.charAt(0).toUpperCase() + view.slice(1)}
+                      {view === "month"
+                        ? calendar.month
+                        : view === "week"
+                          ? calendar.week
+                          : view === "day"
+                            ? calendar.day
+                            : calendar.agenda}
                     </span>
                   </span>
                   <ChevronDownIcon
@@ -299,16 +318,22 @@ export function EventCalendar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-32">
                 <DropdownMenuItem onClick={() => setView("month")}>
-                  Month <DropdownMenuShortcut>M</DropdownMenuShortcut>
+                  {calendar.month}{" "}
+                  <DropdownMenuShortcut>{shortcuts.month}</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("week")}>
-                  Week <DropdownMenuShortcut>W</DropdownMenuShortcut>
+                  {calendar.week}{" "}
+                  <DropdownMenuShortcut>{shortcuts.week}</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("day")}>
-                  Day <DropdownMenuShortcut>D</DropdownMenuShortcut>
+                  {calendar.day}{" "}
+                  <DropdownMenuShortcut>{shortcuts.day}</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("agenda")}>
-                  Agenda <DropdownMenuShortcut>A</DropdownMenuShortcut>
+                  {calendar.agenda}{" "}
+                  <DropdownMenuShortcut>
+                    {shortcuts.agenda}
+                  </DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -342,7 +367,9 @@ export function EventCalendar({
                   size={16}
                   aria-hidden="true"
                 />
-                <span className="max-sm:sr-only">New appointment</span>
+                <span className="max-sm:sr-only">
+                  {calendar.newAppointment}
+                </span>
               </Button>
             )}
           </div>

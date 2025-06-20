@@ -1,0 +1,23 @@
+{
+  "title": "Profile",
+  "description": "Manage your profile information and preferences",
+  "personalInfo": {
+    "title": "Personal Information",
+    "name": "Name",
+    "email": "Email",
+    "identificationNumber": "Identification Number",
+    "language": "Language"
+  },
+  "security": {
+    "title": "Security",
+    "password": "Password",
+    "twoFactor": "Two-Factor Authentication",
+    "sessions": "Active Sessions"
+  },
+  "preferences": {
+    "title": "Preferences",
+    "notifications": "Notifications",
+    "theme": "Theme",
+    "language": "Language"
+  }
+}

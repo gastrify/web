@@ -3,10 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/shared/lib/better-auth/server";
-import { ScrollArea } from "@/shared/components/ui/scroll-area";
-
-import { AdminAppointmentsPage } from "@/features/appointments/components/admin-appointments-page";
-import { UserAppointmentsPage } from "@/features/appointments/components/user-appointments-page";
+import AppointmentsClient from "./AppointmentsClient";
 
 export const metadata: Metadata = {
   title: "Gastrify | Appointments",
@@ -21,9 +18,5 @@ export default async function AppointmentsPage() {
 
   const isAdmin = session.user.role === "admin";
 
-  return (
-    <ScrollArea className="h-full">
-      {isAdmin ? <AdminAppointmentsPage /> : <UserAppointmentsPage />}
-    </ScrollArea>
-  );
+  return <AppointmentsClient isAdmin={isAdmin} />;
 }

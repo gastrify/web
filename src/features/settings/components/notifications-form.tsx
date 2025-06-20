@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -21,6 +22,7 @@ import { TypographyMuted } from "@/shared/components/ui/typography";
 import { useNotificationsForm } from "@/features/settings/hooks/use-notifications-form";
 
 export function NotificationsForm() {
+  const { t } = useTranslation("settingsProfile");
   const { form, onSubmit } = useNotificationsForm();
 
   return (
@@ -29,7 +31,9 @@ export function NotificationsForm() {
         <Image src="/coming-soon.svg" alt="Coming soon" fill />
       </div>
 
-      <TypographyMuted className="text-center">Coming soon...</TypographyMuted>
+      <TypographyMuted className="text-center">
+        {t("notifications.commingSoon")}
+      </TypographyMuted>
     </>
   );
 

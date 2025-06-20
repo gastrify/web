@@ -1,6 +1,8 @@
 "use client";
 
+import "@/shared/lib/i18n/i18n";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -19,6 +21,8 @@ export function SignInForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation("auth");
+
   const {
     form,
     // handleSignInWithGoogle,
@@ -32,12 +36,12 @@ export function SignInForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Sign in</TypographyH1>
+            <TypographyH1>{t("signIn.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Welcome back 👋
+              {t("signIn.description")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -61,7 +65,6 @@ export function SignInForm({
               </svg>
               Google
             </Button> */}
-
             <Button
               type="button"
               variant="secondary"
@@ -74,20 +77,20 @@ export function SignInForm({
 
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
-              Or continue with
+              {t("signIn.orContinueWith")}
             </span>
           </div>
 
           {form}
 
           <div className="text-center text-sm">
-            Don&apos;t have an account?{" "}
+            {t("signIn.noAccount")}{" "}
             <Link
               prefetch
               href="/sign-up"
               className="font-bold hover:underline hover:underline-offset-4"
             >
-              Sign up
+              {t("signUp.title")}
             </Link>
           </div>
         </CardContent>
