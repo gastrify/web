@@ -7,8 +7,8 @@ import SettingsEs from "../../../../public/locales/es/settingsProfile.json";
 import SettingsEn from "../../../../public/locales/en/settingsProfile.json";
 import AppEn from "../../../../public/locales/en/app.json";
 import AppEs from "../../../../public/locales/es/app.json";
-import AppointmentsEs from "../../../../public/locales/es/appoinments.json";
-import AppointmentsEn from "../../../../public/locales/en/appoinments.json";
+import AppointmentsEs from "../../../../public/locales/es/appointments.json";
+import AppointmentsEn from "../../../../public/locales/en/appointments.json";
 
 const lng =
   typeof window !== "undefined"

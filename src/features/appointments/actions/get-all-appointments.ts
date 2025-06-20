@@ -76,6 +76,8 @@ export async function getAllAppointments(): Promise<
       start: item.start,
       end: item.end,
       color: item.color,
+      type: item.type,
+      patientId: item.patientId,
     };
   });
 

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 export const useAppointmentTitle = () => {
-  const { t } = useTranslation("appoinments");
+  const { t } = useTranslation("appointments");
 
   const getTitle = (title: string) => {
     switch (title) {

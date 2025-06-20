@@ -8,8 +8,8 @@
     "emailPlaceholder": "youremail@example.com",
     "emailDescription": "This is the email address we will use to contact you. It will not be publicly visible.",
     "retry": "Retry",
-    "identification": "Identificaction number",
-    "identifiactionDescription": "This is your identification number. It will not be publicly visible.",
+    "identification": "Identification number",
+    "identificationDescription": "This is your identification number. It will not be publicly visible.",
     "name": "Name",
     "nameDescription": "This is your public display name. It can be your real name or a pseudonym.",
     "languagePreference": "Language preference",
@@ -43,7 +43,10 @@
   "notifications": {
     "notificationTitle": "Notifications",
     "notificationDescription": "Configure how you receive notifications.",
-    "commingSoon": "Comming Soon....."
+    "comingSoon": "Coming Soon.....",
+    "languageUpdateSuccess": "Language updated successfully 🎉",
+    "languageUpdateError": "Failed to change language 😢",
+    "languageUpdateErrorDescription": "Please try again later"
   },
   "sidebar": {
     "account": "Account",

@@ -43,7 +43,10 @@
   "notifications": {
     "notificationTitle": "Notificaciones",
     "notificationDescription": "Configura cómo recibes notificaciones.",
-    "commingSoon": "Muy Pronto....."
+    "comingSoon": "Muy Pronto.....",
+    "languageUpdateSuccess": "Idioma actualizado correctamente 🎉",
+    "languageUpdateError": "Error al cambiar el idioma 😢",
+    "languageUpdateErrorDescription": "Por favor, inténtalo de nuevo más tarde"
   },
   "sidebar": {
     "account": "Cuenta",

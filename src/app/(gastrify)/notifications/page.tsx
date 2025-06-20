@@ -25,7 +25,7 @@ export default function NotificationsPage() {
       </div>
 
       <TypographyMuted className="text-center">
-        {t("notifications.commingSoon")}
+        {t("notifications.comingSoon")}
       </TypographyMuted>
     </main>
   );
