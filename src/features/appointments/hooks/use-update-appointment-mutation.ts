@@ -20,6 +20,7 @@ import {
   optimisticUpdate,
   rollback,
 } from "@/features/appointments/utils/optimistic-helpers";
+import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
 
 interface Props {
   form: UseFormReturn<UpdateAppointmentValues>;
@@ -28,6 +29,7 @@ interface Props {
 export const useUpdateAppointmentMutation = ({ form }: Props) => {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
+  const { success } = useAppointmentsTranslations();
 
   return useMutation({
     mutationFn: async (variables: UpdateAppointmentValues) => {
@@ -166,7 +168,7 @@ export const useUpdateAppointmentMutation = ({ form }: Props) => {
       };
     },
     onSuccess: () => {
-      toast.success("Appointment updated successfully 🎉");
+      toast.success(success.updatedSuccessfully);
     },
     onError: (
       error: ActionError<UpdateAppointmentErrorCode>,

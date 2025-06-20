@@ -22,7 +22,6 @@ import { QRCodeDialog } from "@/features/settings/components/qr-code-dialog";
 import { useToggle2FAForm } from "@/features/settings/hooks/use-toggle-2fa-form";
 
 export const Toggle2FAForm = () => {
-  //const t = useTranslation("Settings");
   const { t } = useTranslation("settingsProfile");
   const {
     form,
@@ -117,9 +116,7 @@ export const Toggle2FAForm = () => {
                     </FormLabel>
 
                     <FormDescription>
-                      {t("security.twoFactorDescription")}
-                      {/* {" "} */}
-                      {/* {form.getValues("enable2FA") ? "enable" : "disable"}  */}
+                      {t("security.passwordDescription2FA")}
                     </FormDescription>
                   </div>
 
