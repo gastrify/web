@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckIcon, LoaderIcon, RotateCcwIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -18,6 +19,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useChangeIdentificationNumberForm } from "@/features/settings/hooks/use-change-identification-number-form";
 
 export function ChangeIdentificationNumberForm() {
+  const { t } = useTranslation("settingsProfile");
   const {
     form,
     canSubmit,
@@ -47,7 +49,7 @@ export function ChangeIdentificationNumberForm() {
           render={({ field }) => (
             <FormItem>
               <div className="flex flex-wrap items-center justify-start gap-2">
-                <FormLabel>Identification Number</FormLabel>
+                <FormLabel>{t("account.identification")}</FormLabel>
 
                 {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
@@ -88,8 +90,7 @@ export function ChangeIdentificationNumberForm() {
               </div>
 
               <FormDescription className="text-muted-foreground text-sm">
-                This is your identification number. It will not be publicly
-                visible.
+                {t("account.identificationDescription")}
               </FormDescription>
 
               <FormMessage />

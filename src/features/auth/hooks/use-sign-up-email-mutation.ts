@@ -26,6 +26,7 @@ export const useSignUpEmailMutation = ({ form }: Props) => {
         identificationNumber: values.identificationNumber,
         image,
         callbackURL: "/home",
+        language: "es",
       });
 
       if (error) return Promise.reject(error);

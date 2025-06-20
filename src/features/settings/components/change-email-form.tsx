@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { CheckIcon, LoaderIcon, RotateCcwIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -18,6 +19,7 @@ import { useChangeEmailForm } from "@/features/settings/hooks/use-change-email-f
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export function ChangeEmailForm() {
+  const { t } = useTranslation("settingsProfile");
   const {
     form,
     canSubmit,
@@ -47,7 +49,7 @@ export function ChangeEmailForm() {
           render={({ field }) => (
             <FormItem>
               <div className="flex flex-wrap items-center justify-start gap-2">
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("account.emailLabel")}</FormLabel>
 
                 {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
@@ -57,7 +59,7 @@ export function ChangeEmailForm() {
                     type="button"
                     onClick={() => refetchSession()}
                   >
-                    Retry{" "}
+                    {t("account.retry")}{" "}
                     {isSessionRefetching ? (
                       <LoaderIcon className="animate-spin" />
                     ) : (
@@ -68,7 +70,10 @@ export function ChangeEmailForm() {
 
                 {isSessionSuccess && (
                   <FormControl className="flex-1 sm:w-fit sm:flex-none">
-                    <Input placeholder="david@aragundy.com" {...field} />
+                    <Input
+                      placeholder={t("account.emailPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                 )}
 
@@ -88,8 +93,7 @@ export function ChangeEmailForm() {
               </div>
 
               <FormDescription className="text-muted-foreground text-sm">
-                This is the email address we will use to contact you. It will
-                not be publicly visible.
+                {t("account.emailDescription")}
               </FormDescription>
 
               <FormMessage />

@@ -33,6 +33,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { useNavUser } from "@/shared/hooks/use-nav-user";
 import type { Session } from "@/shared/types";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   user: Session["user"];
@@ -41,6 +42,8 @@ interface Props {
 export const NavUser = ({ user }: Props) => {
   const { isMobile, handleSignOut, handleThemeChange, isSigningOut, theme } =
     useNavUser();
+
+  const { t } = useTranslation("app");
 
   if (isMobile) {
     return (
@@ -66,23 +69,23 @@ export const NavUser = ({ user }: Props) => {
 
         <DrawerContent className="pb-4">
           <DrawerHeader>
-            <DrawerTitle>My account</DrawerTitle>
+            <DrawerTitle>{t("nav-user.my-account")}</DrawerTitle>
 
             <DrawerDescription className="sr-only">
-              Your account settings and preferences.
+              {t("nav-user.account-settings-description")}
             </DrawerDescription>
           </DrawerHeader>
 
           <div className="flex flex-col gap-2 px-4">
             <Button
-              title="Toggle theme"
+              title={t("nav-user.toggle-theme")}
               aria-label="Toggle theme"
               variant="ghost"
               className="w-full justify-start !p-0"
               onClick={() => handleThemeChange()}
             >
               {theme === "dark" ? <MoonIcon /> : <SunIcon />}
-              Toggle theme
+              {t("nav-user.toggle-theme")}
             </Button>
 
             <Button
@@ -95,7 +98,7 @@ export const NavUser = ({ user }: Props) => {
               ) : (
                 <LogOutIcon />
               )}
-              Sign out
+              {t("nav-user.sign-out")}
             </Button>
           </div>
         </DrawerContent>
@@ -135,12 +138,12 @@ export const NavUser = ({ user }: Props) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("nav-user.my-account")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           <DropdownMenuItem onSelect={handleThemeChange}>
             {theme === "dark" ? <MoonIcon size={18} /> : <SunIcon size={18} />}
-            Toggle theme
+            {t("nav-user.toggle-theme")}
             <DropdownMenuShortcut>⌘⇧T</DropdownMenuShortcut>
           </DropdownMenuItem>
 
@@ -150,7 +153,7 @@ export const NavUser = ({ user }: Props) => {
             ) : (
               <LogOutIcon size={18} />
             )}
-            Sign out
+            {t("nav-user.sign-out")}
             <DropdownMenuShortcut>⌘O</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>

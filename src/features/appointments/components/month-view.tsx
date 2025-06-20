@@ -29,6 +29,7 @@ import { DroppableCell } from "@/features/appointments/components/droppable-cell
 import { DraggableEvent } from "@/features/appointments/components/draggable-event";
 import { EventItem } from "@/features/appointments/components/event-item";
 import { useEventVisibility } from "@/features/appointments/hooks/use-event-visibility";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 import type { CalendarEvent } from "@/features/appointments/types";
 import { getAllEventsForDay } from "@/features/appointments/utils/get-all-events-for-day";
 import { getEventsForDay } from "@/features/appointments/utils/get-events-for-day";
@@ -48,21 +49,23 @@ export const MonthView = memo(function MonthView({
   onEventSelect,
   onEventCreate,
 }: MonthViewProps) {
+  const { locale, weekStartsOn } = useDateConfig();
+
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(monthStart);
-    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
-    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn });
 
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-  }, [currentDate]);
+  }, [currentDate, weekStartsOn]);
 
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
-      const date = addDays(startOfWeek(new Date()), i);
-      return format(date, "EEE");
+      const date = addDays(startOfWeek(new Date(), { weekStartsOn }), i);
+      return format(date, "EEE", { locale });
     });
-  }, []);
+  }, [locale, weekStartsOn]);
 
   const weeks = useMemo(() => {
     const result = [];

@@ -1,6 +1,7 @@
 "use client";
 
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -18,6 +19,7 @@ import { TypographyH4 } from "@/shared/components/ui/typography";
 import { useGenerateBackupCodesForm } from "@/features/settings/hooks/use-generate-backup-codes-form";
 
 export const GenerateBackupCodesForm = () => {
+  const { t } = useTranslation("settingsProfile");
   const { form, onSubmit, isPending, isError, isTwoFactorEnabled } =
     useGenerateBackupCodesForm();
 
@@ -25,7 +27,7 @@ export const GenerateBackupCodesForm = () => {
     isTwoFactorEnabled && (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <TypographyH4>Backup codes</TypographyH4>
+          <TypographyH4>{t("backupCodes.backupCodesTitle")}</TypographyH4>
 
           <div className="space-y-4">
             <FormField
@@ -34,8 +36,9 @@ export const GenerateBackupCodesForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex flex-wrap items-center justify-start gap-4">
-                    <FormLabel>Generate backup codes</FormLabel>
-
+                    <FormLabel>
+                      {t("backupCodes.generateBackupCodes")}
+                    </FormLabel>
                     <FormControl>
                       <Button
                         disabled={isPending}
@@ -44,15 +47,12 @@ export const GenerateBackupCodesForm = () => {
                         variant="outline"
                         onClick={() => field.onChange(true)}
                       >
-                        Generate
+                        {t("backupCodes.generateButton")}
                       </Button>
                     </FormControl>
                   </div>
-
                   <FormDescription>
-                    Generate a set of backup codes to use if you lose your
-                    authenticator app. If you already have backup codes, this
-                    will generate a new set and invalidate the old.
+                    {t("backupCodes.generateBackupCodesDescription")}
                   </FormDescription>
                 </FormItem>
               )}
@@ -67,19 +67,17 @@ export const GenerateBackupCodesForm = () => {
               render={({ field }) => (
                 <FormItem className="bg-destructive/40 flex flex-col items-start gap-4 rounded-lg p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Password</FormLabel>
-
+                    <FormLabel className="text-base">
+                      {t("security.password")}
+                    </FormLabel>
                     <FormDescription>
-                      In order to generate backup codes, please enter your
-                      password.
+                      {t("backupCodes.passwordDescription")}
                     </FormDescription>
                   </div>
-
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
-
                   <Button
                     disabled={isPending}
                     type="submit"
@@ -87,7 +85,7 @@ export const GenerateBackupCodesForm = () => {
                   >
                     {isPending && <LoaderIcon className="animate-spin" />}
                     {isError && <RotateCcwIcon />}
-                    Generate backup codes
+                    {t("backupCodes.generateButton")}
                   </Button>
                 </FormItem>
               )}

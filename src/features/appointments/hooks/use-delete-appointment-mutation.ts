@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { deleteAppointment } from "@/features/appointments/actions/delete-appointment";
+import { useSession } from "@/shared/hooks/use-session";
 import type {
   CalendarEvent,
   IncomingAppointment,
@@ -17,6 +18,7 @@ interface DeleteAppointmentVariables {
 
 export const useDeleteAppointmentMutation = () => {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
 
   return useMutation({
     mutationFn: async (variables: DeleteAppointmentVariables) => {
@@ -25,12 +27,17 @@ export const useDeleteAppointmentMutation = () => {
       if (error) return Promise.reject(error);
     },
     onMutate: async (variables) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
-        queryKey: ["appointments", "list", "calendar"],
+        queryKey: ["appointments", "list"],
       });
-      await queryClient.cancelQueries({
-        queryKey: ["appointments", "list", "incoming"],
-      });
+
+      // Remove from all queries optimistically
+      const previousAllAppointments = optimisticRemove<CalendarEvent>(
+        queryClient,
+        ["appointments", "list", "all", session?.user?.id],
+        (appointment) => appointment.id === variables.appointmentId,
+      );
 
       const previousCalendarAppointments = optimisticRemove<CalendarEvent>(
         queryClient,
@@ -46,9 +53,25 @@ export const useDeleteAppointmentMutation = () => {
             incomingAppointment.appointment.id === variables.appointmentId,
         );
 
-      return { previousCalendarAppointments, previousIncomingAppointments };
+      return {
+        previousAllAppointments,
+        previousCalendarAppointments,
+        previousIncomingAppointments,
+      };
+    },
+    onSuccess: () => {
+      toast.success("Appointment deleted successfully 🗑️");
     },
     onError: (_error, _variables, context) => {
+      // Rollback optimistic updates
+      if (context?.previousAllAppointments) {
+        rollback<CalendarEvent>(
+          queryClient,
+          ["appointments", "list", "all", session?.user?.id],
+          context.previousAllAppointments,
+        );
+      }
+
       if (context?.previousCalendarAppointments) {
         rollback<CalendarEvent>(
           queryClient,
@@ -69,17 +92,10 @@ export const useDeleteAppointmentMutation = () => {
         description: "Please try again later",
       });
     },
-    onSettled: (_data, _error, variables) => {
+    onSettled: () => {
+      // Invalidate all appointment-related queries
       queryClient.invalidateQueries({
-        queryKey: ["appointments", "details", variables.appointmentId],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["appointments", "list", "incoming"],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["appointments", "list", "calendar"],
+        queryKey: ["appointments", "list"],
       });
     },
   });

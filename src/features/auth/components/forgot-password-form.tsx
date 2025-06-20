@@ -1,7 +1,9 @@
 "use client";
 
+import "@/shared/lib/i18n/i18n";
 import Link from "next/link";
 import { LoaderIcon, MailIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -30,19 +32,19 @@ export function ForgotPasswordForm({
   ...props
 }: React.ComponentProps<"div">) {
   const { form, onSubmit, isPending } = useForgotPasswordForm();
+  const { t } = useTranslation("auth");
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Forgot password</TypographyH1>
+            <TypographyH1>{t("forgotPassword.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Please enter your email address to receive a password reset link
-              🔒.
+              {t("forgotPassword.description")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -54,7 +56,7 @@ export function ForgotPasswordForm({
                 name="email"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("forgotPassword.emailLabel")}</FormLabel>
 
                     <div className="relative">
                       <FormControl>
@@ -91,18 +93,18 @@ export function ForgotPasswordForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Send reset link
+                {t("forgotPassword.sendButton")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            Do you remember now?{" "}
+            {t("resetPassword.doYouRemember")}{" "}
             <Link
               href="/sign-in"
               className="font-bold hover:underline hover:underline-offset-4"
             >
-              Sign in
+              {t("resetPassword.signIn")}
             </Link>
           </div>
         </CardContent>

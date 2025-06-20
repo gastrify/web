@@ -1,0 +1,19 @@
+{
+  "title": "Notifications",
+  "comingSoon": "Coming soon...",
+  "description": "Here you can view all your notifications and important alerts.",
+  "noNotifications": "You have no notifications",
+  "markAllAsRead": "Mark all as read",
+  "clearAll": "Clear all",
+  "types": {
+    "appointment": "Appointment",
+    "reminder": "Reminder",
+    "system": "System",
+    "update": "Update"
+  },
+  "actions": {
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "view": "View"
+  }
+}

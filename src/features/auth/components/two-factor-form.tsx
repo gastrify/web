@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { LoaderIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -33,6 +34,7 @@ export function TwoFactorForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation("auth");
   const { form, onSubmit, isPending } = useTwoFactorForm();
 
   return (
@@ -40,12 +42,12 @@ export function TwoFactorForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Two-factor authentication 💂</TypographyH1>
+            <TypographyH1>{t("twoFactor.title")}</TypographyH1>
           </CardTitle>
 
           <CardDescription>
             <TypographyP className="leading-normal">
-              Enter your one-time password to continue.
+              {t("twoFactor.description")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -100,15 +102,15 @@ export function TwoFactorForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Verify
+                {t("twoFactor.verifyButton")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            Don&apos;t have access to your authenticator app?{" "}
+            {t("twoFactor.noAuthenticator")}{" "}
             <Link href="/recovery" className="underline underline-offset-4">
-              Use recovery code
+              {t("twoFactor.useRecoveryCode")}
             </Link>
           </div>
         </CardContent>

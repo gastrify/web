@@ -1,0 +1,24 @@
+{
+  "title": "Inicio",
+  "welcome": "Bienvenido a Gastrify",
+  "description": "Tu plataforma de gestión de citas médicas. Aquí puedes ver un resumen de tus actividades recientes y acceder rápidamente a las funciones principales.",
+  "quickActions": {
+    "title": "Acciones Rápidas",
+    "bookAppointment": "Reservar Cita",
+    "viewAppointments": "Ver Mis Citas",
+    "viewNotifications": "Ver Notificaciones"
+  },
+  "recentActivity": {
+    "title": "Actividad Reciente",
+    "noActivity": "No hay actividad reciente",
+    "lastAppointment": "Última cita",
+    "upcomingAppointment": "Próxima cita"
+  },
+  "stats": {
+    "title": "Estadísticas",
+    "totalAppointments": "Total de Citas",
+    "completedAppointments": "Citas Completadas",
+    "upcomingAppointments": "Citas Próximas",
+    "cancelledAppointments": "Citas Canceladas"
+  }
+}

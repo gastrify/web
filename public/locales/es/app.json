@@ -1,0 +1,28 @@
+{
+  "sidebar": {
+    "home": "Inicio",
+    "appointments": "Citas",
+    "notifications": "Notificaciones",
+    "profile": "Perfil",
+    "settings": "Configuración"
+  },
+  "page": {
+    "homeTitle": "Inicio",
+    "homeDescription": "¡Bienvenido a Gastrify!",
+    "profileTitle": "Perfil",
+    "profileDescription": "Tu información personal y configuración.",
+    "notificationsTitle": "Notificaciones",
+    "notificationsDescription": "Aquí verás tus notificaciones.",
+    "comingSoon": "Próximamente..."
+  },
+  "nav-user": {
+    "my-account": "Mi Cuenta",
+    "account-settings-description": "La configuración y preferencias de tu cuenta.",
+    "toggle-theme": "Cambiar tema",
+    "sign-out": "Cerrar sesión",
+    "online": "En línea",
+    "failed-to-sign-out": "Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.",
+    "gastrify-plus-description": "Desbloquea todas las funciones y obtén acceso ilimitado a nuestro equipo de soporte.",
+    "go-to-billing": "Ir a facturación"
+  }
+}

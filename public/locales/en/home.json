@@ -1,0 +1,24 @@
+{
+  "title": "Home",
+  "welcome": "Welcome to Gastrify",
+  "description": "Your medical appointment management platform. Here you can view a summary of your recent activities and quickly access main features.",
+  "quickActions": {
+    "title": "Quick Actions",
+    "bookAppointment": "Book Appointment",
+    "viewAppointments": "View My Appointments",
+    "viewNotifications": "View Notifications"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "noActivity": "No recent activity",
+    "lastAppointment": "Last appointment",
+    "upcomingAppointment": "Upcoming appointment"
+  },
+  "stats": {
+    "title": "Statistics",
+    "totalAppointments": "Total Appointments",
+    "completedAppointments": "Completed Appointments",
+    "upcomingAppointments": "Upcoming Appointments",
+    "cancelledAppointments": "Cancelled Appointments"
+  }
+}

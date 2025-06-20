@@ -2,6 +2,7 @@
 
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
 
+import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/components/ui/button";
 import {
   Form,
@@ -19,6 +20,7 @@ import { PasswordStrengthIndicator } from "@/shared/components/password-strength
 import { useChangePasswordForm } from "@/features/settings/hooks/use-change-password-form";
 
 export const ChangePasswordForm = () => {
+  const { t } = useTranslation("settingsProfile");
   const { form, onSubmit, isPending, isError, isSessionSuccess } =
     useChangePasswordForm();
 
@@ -29,7 +31,7 @@ export const ChangePasswordForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <TypographyH4>Change password</TypographyH4>
+        <TypographyH4>{t("security.passwordTitle")}</TypographyH4>
 
         <FormField
           disabled={isPending || !isSessionSuccess}
@@ -38,7 +40,7 @@ export const ChangePasswordForm = () => {
           render={({ field, fieldState }) => (
             <FormItem>
               <div className="flex flex-wrap items-center justify-start gap-2">
-                <FormLabel>New password</FormLabel>
+                <FormLabel>{t("security.newPassword")}</FormLabel>
 
                 <FormControl className="w-full sm:w-fit">
                   <Input type="password" placeholder="••••••••" {...field} />
@@ -46,8 +48,7 @@ export const ChangePasswordForm = () => {
               </div>
 
               <FormDescription className="text-muted-foreground text-sm">
-                If you change your password, all your active sessions will be
-                logged out.
+                {t("security.passwordDescription")}
               </FormDescription>
 
               {/* <FormMessage /> */}

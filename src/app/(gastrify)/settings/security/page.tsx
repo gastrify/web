@@ -1,21 +1,9 @@
-import { SettingsPageHeader } from "@/features/settings/components/settings-page-header";
-import { ChangePasswordForm } from "@/features/settings/components/change-password-form";
-import { Toggle2FAForm } from "@/features/settings/components/toggle-2fa-form";
-import { GenerateBackupCodesForm } from "@/features/settings/components/generate-backup-codes-form";
-import { ActiveSessions } from "@/features/settings/components/active-sessions";
+import type { Metadata } from "next";
 
-export default function SettingsSecurityPage() {
-  return (
-    <>
-      <SettingsPageHeader
-        title="Security"
-        description="Update your account's security settings."
-      />
+import { SettingsSecurityPage } from "@/features/settings/components/security-page";
 
-      <ChangePasswordForm />
-      <Toggle2FAForm />
-      <GenerateBackupCodesForm />
-      <ActiveSessions />
-    </>
-  );
-}
+export const metadata: Metadata = {
+  title: "Gastrify | Settings",
+};
+
+export default SettingsSecurityPage;
