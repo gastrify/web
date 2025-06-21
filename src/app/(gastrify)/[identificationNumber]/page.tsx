@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 
@@ -12,6 +13,10 @@ export default function ProfilePage({}: {
   params: Promise<{ identificationNumber: string }>;
 }) {
   const { t } = useTranslation("settingsProfile");
+
+  useEffect(() => {
+    document.title = `Gastrify | ${t("profile.title")}`;
+  }, [t]);
 
   return (
     <main className="flex flex-col gap-6">

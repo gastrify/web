@@ -1,27 +1,25 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { TypographyH1, TypographyH3 } from "@/shared/components/ui/typography";
 
 import { AdminIncomingAppointments } from "@/features/appointments/components/admin-incoming-appointments";
-import { EventCalendar } from "@/features/appointments/components/event-calendar";
-import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
-import { useAllAppointments } from "@/features/appointments/hooks/use-all-appointments";
+import { Appointments } from "@/features/appointments/components/appointments";
 
 export function AdminAppointmentsPage() {
-  const { calendar } = useAppointmentsTranslations();
-  const { data: appointments } = useAllAppointments();
+  const { t } = useTranslation("appointments");
 
   return (
     <div className="flex h-full flex-col gap-6 pr-6">
-      <TypographyH1>{calendar.appointments}</TypographyH1>
+      <TypographyH1>{t("page.title")}</TypographyH1>
 
-      <TypographyH3>{calendar.incomingAppointments}</TypographyH3>
+      <TypographyH3>{t("calendar.incomingAppointments")}</TypographyH3>
 
       <AdminIncomingAppointments />
 
-      <TypographyH3>{calendar.manageAppointments}</TypographyH3>
+      <TypographyH3>{t("calendar.manageAppointments")}</TypographyH3>
 
-      <EventCalendar events={appointments || []} initialView="agenda" />
+      <Appointments />
     </div>
   );
 }

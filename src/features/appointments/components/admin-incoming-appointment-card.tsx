@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
 import {
   formatDuration,
   intervalToDuration,
@@ -17,7 +20,6 @@ import {
 import { TypographyP } from "@/shared/components/ui/typography";
 
 import { useAdminIncomingAppointmentCard } from "@/features/appointments/hooks/use-admin-incoming-appointment-card";
-import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
 import { useDateConfig } from "@/features/appointments/lib/date-config";
 import type { IncomingAppointment } from "@/features/appointments/types";
 
@@ -26,9 +28,8 @@ interface Props {
 }
 
 export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
-  const { incoming, booking } = useAppointmentsTranslations();
+  const { t } = useTranslation("appointments");
   const { locale } = useDateConfig();
-
   const {
     isDeleteAppointmentPending,
     isDeleteAppointmentError,
@@ -40,8 +41,8 @@ export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
       <CardHeader>
         <CardTitle>
           {incomingAppointment.appointment.type === "in-person"
-            ? booking.inPerson
-            : booking.virtual}{" "}
+            ? t("user.inPersonAppointment")
+            : t("user.virtualAppointment")}{" "}
           (
           {formatDistanceToNow(incomingAppointment.appointment.start, {
             addSuffix: true,
@@ -53,17 +54,17 @@ export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
         <CardDescription className="flex items-center">
           <div className="flex flex-1 flex-col">
             <TypographyP className="!mt-2 leading-normal">
-              <span className="font-bold">{incoming.start}:</span>{" "}
+              <span className="font-bold">{t("user.start")}:</span>{" "}
               {format(incomingAppointment.appointment.start, "PPp", { locale })}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">{incoming.end}:</span>{" "}
+              <span className="font-bold">{t("user.end")}:</span>{" "}
               {format(incomingAppointment.appointment.end, "PPp", { locale })}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">{booking.duration}:</span>{" "}
+              <span className="font-bold">{t("user.duration")}:</span>{" "}
               {formatDuration(
                 intervalToDuration({
                   start: incomingAppointment.appointment.start,
@@ -76,17 +77,17 @@ export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
 
           <div className="flex flex-1 flex-col">
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">{incoming.patient}:</span>{" "}
+              <span className="font-bold">{t("incoming.patient")}:</span>{" "}
               {incomingAppointment.patient.name}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">{incoming.patientId}:</span>{" "}
+              <span className="font-bold">{t("incoming.patientId")}:</span>{" "}
               {incomingAppointment.patient.identificationNumber}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">{incoming.patientEmail}:</span>{" "}
+              <span className="font-bold">{t("incoming.patientEmail")}:</span>{" "}
               {incomingAppointment.patient.email}
             </TypographyP>
           </div>
@@ -104,7 +105,7 @@ export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
               <LoaderIcon className="animate-spin" />
             )}
             {isDeleteAppointmentError && <RotateCcwIcon />}
-            {incoming.delete}
+            {t("incoming.delete")}
           </Button>
         </CardAction>
       </CardHeader>

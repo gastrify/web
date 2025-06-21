@@ -1,15 +1,14 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getAllAppointments } from "@/features/appointments/actions/get-all-appointments";
 import { EventCalendar } from "@/features/appointments/components/event-calendar";
-import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
 
 export function Appointments() {
-  const { errors } = useAppointmentsTranslations();
-
+  const { t } = useTranslation("appointments");
   const { data, isError } = useQuery({
     queryKey: ["appointments", "list", "calendar"],
     queryFn: async () => {
@@ -22,8 +21,8 @@ export function Appointments() {
   });
 
   if (isError)
-    toast.error(errors.fetchError, {
-      description: errors.fetchErrorDescription,
+    toast.error(t("errors.fetchError"), {
+      description: t("errors.fetchErrorDescription"),
     });
 
   return <EventCalendar initialView="agenda" events={data} />;

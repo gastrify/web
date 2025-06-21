@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 import {
@@ -17,6 +18,10 @@ export default function SettingsLayout({
   children: React.ReactNode;
 }>) {
   const { t } = useTranslation("settingsProfile");
+
+  useEffect(() => {
+    document.title = `Gastrify | ${t("titleSettings")}`;
+  }, [t]);
 
   return (
     <div className="flex h-full flex-col space-y-8">

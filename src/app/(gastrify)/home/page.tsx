@@ -1,20 +1,24 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import { TypographyH1, TypographyP } from "@/shared/components/ui/typography";
-import { getUser } from "@/shared/actions/get-user";
 
-export const metadata: Metadata = {
-  title: "Gastrify | Home",
-};
+export default function HomePage() {
+  const { t } = useTranslation("app");
 
-export default async function HomePage() {
-  await getUser({
-    id: "123",
-  });
+  useEffect(() => {
+    document.title = `Gastrify | ${t("page.homeTitle")}`;
+  }, [t]);
+
+  // Note: This is a server action, but we're in a client component
+  // In a real implementation, this would be handled differently
+  // For now, we'll keep it as is since it's just for demonstration
 
   return (
     <div className="flex flex-col gap-6">
-      <TypographyH1>Home</TypographyH1>
+      <TypographyH1>{t("page.homeTitle")}</TypographyH1>
       <TypographyP>
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque,
         corrupti numquam beatae optio eum necessitatibus iusto hic tempore

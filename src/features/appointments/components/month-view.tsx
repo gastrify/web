@@ -29,12 +29,13 @@ import { DroppableCell } from "@/features/appointments/components/droppable-cell
 import { DraggableEvent } from "@/features/appointments/components/draggable-event";
 import { EventItem } from "@/features/appointments/components/event-item";
 import { useEventVisibility } from "@/features/appointments/hooks/use-event-visibility";
-import { useDateConfig } from "@/features/appointments/lib/date-config";
 import type { CalendarEvent } from "@/features/appointments/types";
 import { getAllEventsForDay } from "@/features/appointments/utils/get-all-events-for-day";
 import { getEventsForDay } from "@/features/appointments/utils/get-events-for-day";
 import { getSpanningEventsForDay } from "@/features/appointments/utils/get-spanning-events-for-day";
 import { sortEvents } from "@/features/appointments/utils/sort-events";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
+import { useTranslation } from "react-i18next";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -49,23 +50,35 @@ export const MonthView = memo(function MonthView({
   onEventSelect,
   onEventCreate,
 }: MonthViewProps) {
-  const { locale, weekStartsOn } = useDateConfig();
+  const { t } = useTranslation("appointments");
+  const { locale } = useDateConfig();
+
+  // Function to translate event titles
+  const getTranslatedTitle = (title: string) => {
+    if (title === "available") {
+      return t("create.appointmentStatus.available");
+    }
+    if (title === "booked") {
+      return t("create.appointmentStatus.booked");
+    }
+    return title;
+  };
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(monthStart);
-    const calendarStart = startOfWeek(monthStart, { weekStartsOn });
-    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn });
+    const monthEnd = endOfMonth(currentDate);
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-  }, [currentDate, weekStartsOn]);
+  }, [currentDate]);
 
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
-      const date = addDays(startOfWeek(new Date(), { weekStartsOn }), i);
+      const date = addDays(startOfWeek(new Date()), i);
       return format(date, "EEE", { locale });
     });
-  }, [locale, weekStartsOn]);
+  }, [locale]);
 
   const weeks = useMemo(() => {
     const result = [];
@@ -225,7 +238,7 @@ export const MonthView = memo(function MonthView({
                                 isLastDay={isLastDay}
                               >
                                 <div className="invisible" aria-hidden={true}>
-                                  {event.title}
+                                  {getTranslatedTitle(event.title)}
                                 </div>
                               </EventItem>
                             </div>
@@ -273,7 +286,7 @@ export const MonthView = memo(function MonthView({
                           >
                             <div className="space-y-2">
                               <div className="text-sm font-medium">
-                                {format(day, "EEE d")}
+                                {format(day, "EEE d", { locale })}
                               </div>
                               <div className="space-y-1">
                                 {sortEvents(allEvents).map((event) => {

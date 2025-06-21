@@ -1,15 +1,19 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { GalleryVerticalEnd } from "lucide-react";
 
 import { SignUpForm } from "@/features/auth/components/sign-up-form";
 
-export const metadata: Metadata = {
-  title: "Gastrify | Sign Up",
-  description: "Sign up to Gastrify",
-};
-
 export default function SignUpPage() {
+  const { t } = useTranslation("auth");
+
+  useEffect(() => {
+    document.title = `Gastrify | ${t("signUp.title")}`;
+  }, [t]);
+
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
       <Link

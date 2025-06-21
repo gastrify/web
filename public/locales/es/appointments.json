@@ -1,4 +1,10 @@
 {
+  "page": {
+    "title": "Citas",
+    "description": "Gestiona tus citas y agenda"
+  },
+  "today": "Hoy",
+  "newAppointment": "Nueva cita",
   "calendar": {
     "today": "Hoy",
     "month": "Mes",
@@ -44,20 +50,41 @@
   "create": {
     "title": "Crear Cita",
     "description": "Agregar una nueva cita a tu agenda",
-    "startDate": "Fecha de Inicio",
-    "endDate": "Fecha de Fin",
-    "startTime": "Hora de Inicio",
-    "endTime": "Hora de Fin",
-    "pickDate": "Seleccionar fecha",
-    "selectTime": "Seleccionar hora",
+    "startDate": {
+      "label": "Fecha de Inicio",
+      "placeholder": "Seleccionar fecha"
+    },
+    "endDate": {
+      "label": "Fecha de Fin",
+      "placeholder": "Seleccionar fecha"
+    },
+    "startTime": {
+      "label": "Hora de Inicio",
+      "placeholder": "Seleccionar hora"
+    },
+    "endTime": {
+      "label": "Hora de Fin",
+      "placeholder": "Seleccionar hora"
+    },
     "patientId": "Número de Identificación del Paciente",
     "patientIdPlaceholder": "Ingresa el número de identificación",
-    "appointmentType": "Tipo de Cita",
+    "appointmentType": {
+      "label": "Tipo de Cita",
+      "inPerson": "Presencial",
+      "virtual": "Virtual"
+    },
     "status": "Estado",
     "available": "Disponible",
     "booked": "Reservado",
     "cancelled": "Cancelado",
-    "createAppointment": "Crear Cita"
+    "createAppointment": "Crear Cita",
+    "appointmentStatus": {
+      "label": "Estado de la Cita",
+      "available": "Disponible",
+      "booked": "Reservado"
+    },
+    "cancel": "Cancelar",
+    "save": "Guardar"
   },
   "update": {
     "title": "Actualizar Cita",

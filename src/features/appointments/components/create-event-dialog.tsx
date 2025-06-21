@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { CalendarIcon, IdCardIcon, LoaderIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -42,10 +43,10 @@ import { cn } from "@/shared/utils/cn";
 
 import { EndHour, StartHour } from "@/features/appointments/constants";
 import { createAppointmentSchema } from "@/features/appointments/schemas/create-appointment-schema";
-import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
 import type { CreateAppointmentValues } from "@/features/appointments/types";
 import { formatTimeForInput } from "@/features/appointments/utils/format-time-for-input";
 import { useCreateAppointmentMutation } from "../hooks/use-create-appointment-mutation";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -57,7 +58,8 @@ interface EventDialogProps {
 }
 
 export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
-  const { create, booking } = useAppointmentsTranslations();
+  const { t } = useTranslation("appointments");
+  const { locale } = useDateConfig();
 
   const form = useForm<CreateAppointmentValues>({
     resolver: zodResolver(createAppointmentSchema),
@@ -80,12 +82,12 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
         const value = `${formattedHour}:${formattedMinute}`;
         // Use a fixed date to avoid unnecessary date object creations
         const date = new Date(2000, 0, 1, hour, minute);
-        const label = format(date, "h:mm a");
+        const label = format(date, "h:mm a", { locale });
         options.push({ value, label });
       }
     }
     return options;
-  }, []);
+  }, [locale]);
 
   const { mutate, isPending } = useCreateAppointmentMutation({ form });
 
@@ -104,10 +106,10 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
         <Dialog modal open={isOpen} onOpenChange={(open) => !open && onClose()}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>{create.title}</DialogTitle>
+              <DialogTitle>{t("create.title")}</DialogTitle>
 
               <DialogDescription className="sr-only">
-                {create.description}
+                {t("create.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -119,7 +121,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-4">
                       <FormItem className="flex flex-1 flex-col">
-                        <FormLabel>{create.startDate}</FormLabel>
+                        <FormLabel>{t("create.startDate.label")}</FormLabel>
 
                         <Popover>
                           <PopoverTrigger disabled={isPending} asChild>
@@ -133,9 +135,11 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, "PPP", { locale })
                                 ) : (
-                                  <span>{create.pickDate}</span>
+                                  <span>
+                                    {t("create.startDate.placeholder")}
+                                  </span>
                                 )}
 
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -154,7 +158,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                       </FormItem>
 
                       <div className="flex flex-1 flex-col gap-2">
-                        <FormLabel>{create.startTime}</FormLabel>
+                        <FormLabel>{t("create.startTime.label")}</FormLabel>
 
                         <Select
                           disabled={isPending}
@@ -175,7 +179,9 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                           defaultValue={formatTimeForInput(data.start)}
                         >
                           <SelectTrigger aria-invalid={fieldState.invalid}>
-                            <SelectValue placeholder={create.selectTime} />
+                            <SelectValue
+                              placeholder={t("create.startTime.placeholder")}
+                            />
                           </SelectTrigger>
 
                           <SelectContent>
@@ -204,7 +210,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-4">
                       <FormItem className="flex flex-1 flex-col">
-                        <FormLabel>{create.endDate}</FormLabel>
+                        <FormLabel>{t("create.endDate.label")}</FormLabel>
 
                         <Popover>
                           <PopoverTrigger disabled={isPending} asChild>
@@ -218,9 +224,9 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, "PPP", { locale })
                                 ) : (
-                                  <span>{create.pickDate}</span>
+                                  <span>{t("create.endDate.placeholder")}</span>
                                 )}
 
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -239,7 +245,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                       </FormItem>
 
                       <div className="flex flex-1 flex-col gap-2">
-                        <FormLabel>{create.endTime}</FormLabel>
+                        <FormLabel>{t("create.endTime.label")}</FormLabel>
 
                         <Select
                           disabled={isPending}
@@ -256,7 +262,9 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                           defaultValue={formatTimeForInput(data.end)}
                         >
                           <SelectTrigger aria-invalid={fieldState.invalid}>
-                            <SelectValue placeholder={create.selectTime} />
+                            <SelectValue
+                              placeholder={t("create.endTime.placeholder")}
+                            />
                           </SelectTrigger>
 
                           <SelectContent>
@@ -283,7 +291,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                 name="status"
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-4">
-                    <FormLabel>{create.status}</FormLabel>
+                    <FormLabel>{t("create.appointmentStatus.label")}</FormLabel>
 
                     <FormControl>
                       <RadioGroup
@@ -298,7 +306,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                           </FormControl>
 
                           <FormLabel className="font-normal">
-                            {create.available}
+                            {t("create.appointmentStatus.available")}
                           </FormLabel>
                         </FormItem>
 
@@ -308,7 +316,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                           </FormControl>
 
                           <FormLabel className="font-normal">
-                            {create.booked}
+                            {t("create.appointmentStatus.booked")}
                           </FormLabel>
                         </FormItem>
                       </RadioGroup>
@@ -326,7 +334,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                     name="patientIdentificationNumber"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col gap-4">
-                        <FormLabel>{create.patientId}</FormLabel>
+                        <FormLabel>{t("create.patientId")}</FormLabel>
 
                         <div className="relative">
                           <FormControl>
@@ -336,9 +344,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                               minLength={10}
                               className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                               placeholder={
-                                fieldState.invalid
-                                  ? undefined
-                                  : create.patientIdPlaceholder
+                                fieldState.invalid ? undefined : "1234567890"
                               }
                               {...field}
                             />
@@ -368,7 +374,9 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                     name="type"
                     render={({ field }) => (
                       <FormItem className="flex flex-col gap-4">
-                        <FormLabel>{create.appointmentType}</FormLabel>
+                        <FormLabel>
+                          {t("create.appointmentType.label")}
+                        </FormLabel>
 
                         <FormControl>
                           <RadioGroup
@@ -383,7 +391,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                               </FormControl>
 
                               <FormLabel className="font-normal">
-                                {booking.inPerson}
+                                {t("create.appointmentType.inPerson")}
                               </FormLabel>
                             </FormItem>
 
@@ -393,7 +401,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                               </FormControl>
 
                               <FormLabel className="font-normal">
-                                {booking.virtual}
+                                {t("create.appointmentType.virtual")}
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
@@ -410,7 +418,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
             <DialogFooter className="flex-row sm:justify-between">
               <div className="flex flex-1 justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onClose}>
-                  {booking.cancel}
+                  {t("create.cancel")}
                 </Button>
 
                 <Button
@@ -419,7 +427,7 @@ export function CreateEventDialog({ isOpen, onClose, data }: EventDialogProps) {
                   disabled={isPending}
                 >
                   {isPending && <LoaderIcon className="animate-spin" />}{" "}
-                  {create.createAppointment}
+                  {t("create.save")}
                 </Button>
               </div>
             </DialogFooter>

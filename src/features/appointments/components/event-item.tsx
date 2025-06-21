@@ -1,20 +1,20 @@
 "use client";
 
-import { useMemo, memo } from "react";
-import type { DraggableAttributes } from "@dnd-kit/core";
-import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+import { memo, useMemo } from "react";
 import {
-  differenceInMinutes,
   format,
   getMinutes,
   isPast,
-  Locale,
+  differenceInMinutes,
+  type Locale,
 } from "date-fns";
+import type { DraggableAttributes } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 
 import { cn } from "@/shared/utils/cn";
-
-import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
 import { useDateConfig } from "@/features/appointments/lib/date-config";
+import { useTranslation } from "react-i18next";
+
 import type { CalendarEvent } from "@/features/appointments/types";
 import { getBorderRadiusClasses } from "@/features/appointments/utils/get-border-radius-classes";
 import { getEventColorClasses } from "@/features/appointments/utils/get-event-color-classes";
@@ -123,17 +123,19 @@ export const EventItem = memo(function EventItem({
   onMouseDown,
   onTouchStart,
 }: EventItemProps) {
-  const { create } = useAppointmentsTranslations();
+  const { t } = useTranslation("appointments");
   const { locale } = useDateConfig();
 
-  const eventColor = event.color;
-
-  // Translate event title if it's a status
-  const translatedTitle = useMemo(() => {
-    if (event.title === "available") return create.available;
-    if (event.title === "booked") return create.booked;
-    return event.title;
-  }, [event.title, create.available, create.booked]);
+  // Function to translate event titles
+  const getTranslatedTitle = (title: string) => {
+    if (title === "available") {
+      return t("create.appointmentStatus.available");
+    }
+    if (title === "booked") {
+      return t("create.appointmentStatus.booked");
+    }
+    return title;
+  };
 
   // Use the provided currentTime (for dragging) or the event's actual time
   const displayStart = useMemo(() => {
@@ -182,7 +184,9 @@ export const EventItem = memo(function EventItem({
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
-        {children || <span className="truncate">{translatedTitle}</span>}
+        {children || (
+          <span className="truncate">{getTranslatedTitle(event.title)}</span>
+        )}
       </EventWrapper>
     );
   }
@@ -209,7 +213,7 @@ export const EventItem = memo(function EventItem({
       >
         {durationMinutes < 45 ? (
           <div className="truncate">
-            {translatedTitle}{" "}
+            {getTranslatedTitle(event.title)}{" "}
             {showTime && (
               <span className="opacity-70">
                 {formatTimeWithOptionalMinutes(displayStart, locale)}
@@ -218,7 +222,9 @@ export const EventItem = memo(function EventItem({
           </div>
         ) : (
           <>
-            <div className="truncate font-medium">{translatedTitle}</div>
+            <div className="truncate font-medium">
+              {getTranslatedTitle(event.title)}
+            </div>
             {showTime && (
               <div className="truncate font-normal opacity-70 sm:text-[11px]">
                 {getEventTime()}
@@ -232,26 +238,28 @@ export const EventItem = memo(function EventItem({
 
   // Agenda view - kept separate since it's significantly different
   return (
-    <button
-      className={cn(
-        "focus-visible:border-ring focus-visible:ring-ring/50 flex w-full flex-col gap-1 rounded p-2 text-left transition outline-none focus-visible:ring-[3px] data-past-event:line-through data-past-event:opacity-90",
-        getEventColorClasses(eventColor),
-        className,
-      )}
-      data-past-event={isPast(new Date(event.end)) || undefined}
+    <EventWrapper
+      event={event}
+      isFirstDay={isFirstDay}
+      isLastDay={isLastDay}
+      isDragging={isDragging}
       onClick={onClick}
+      className={cn("flex-col py-2 text-sm", className)}
+      currentTime={currentTime}
+      dndListeners={dndListeners}
+      dndAttributes={dndAttributes}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
-      {...dndListeners}
-      {...dndAttributes}
     >
-      <div className="text-sm font-medium">{translatedTitle}</div>
+      <div className="truncate font-medium">
+        {getTranslatedTitle(event.title)}
+      </div>
       <div className="text-xs opacity-70">
         <span className="uppercase">
           {formatTimeWithOptionalMinutes(displayStart, locale)} -{" "}
           {formatTimeWithOptionalMinutes(displayEnd, locale)}
         </span>
       </div>
-    </button>
+    </EventWrapper>
   );
 });

@@ -1,4 +1,10 @@
 {
+  "page": {
+    "title": "Appointments",
+    "description": "Manage your appointments and schedule"
+  },
+  "today": "Today",
+  "newAppointment": "New appointment",
   "calendar": {
     "today": "Today",
     "month": "Month",
@@ -44,20 +50,41 @@
   "create": {
     "title": "Create Appointment",
     "description": "Add a new appointment to your schedule",
-    "startDate": "Start Date",
-    "endDate": "End Date",
-    "startTime": "Start Time",
-    "endTime": "End Time",
-    "pickDate": "Pick a date",
-    "selectTime": "Select time",
+    "startDate": {
+      "label": "Start Date",
+      "placeholder": "Pick a date"
+    },
+    "endDate": {
+      "label": "End Date",
+      "placeholder": "Pick a date"
+    },
+    "startTime": {
+      "label": "Start Time",
+      "placeholder": "Select time"
+    },
+    "endTime": {
+      "label": "End Time",
+      "placeholder": "Select time"
+    },
     "patientId": "Patient Identification Number",
     "patientIdPlaceholder": "Enter identification number",
-    "appointmentType": "Appointment Type",
+    "appointmentType": {
+      "label": "Appointment Type",
+      "inPerson": "In-Person",
+      "virtual": "Virtual"
+    },
     "status": "Status",
     "available": "Available",
     "booked": "Booked",
     "cancelled": "Cancelled",
-    "createAppointment": "Create Appointment"
+    "createAppointment": "Create Appointment",
+    "appointmentStatus": {
+      "label": "Appointment Status",
+      "available": "Available",
+      "booked": "Booked"
+    },
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "update": {
     "title": "Update Appointment",

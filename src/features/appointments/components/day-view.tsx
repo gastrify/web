@@ -5,7 +5,6 @@ import {
   addHours,
   areIntervalsOverlapping,
   differenceInMinutes,
-  eachHourOfInterval,
   format,
   getHours,
   getMinutes,
@@ -14,18 +13,20 @@ import {
 } from "date-fns";
 
 import { cn } from "@/shared/utils/cn";
+import { useCurrentTimeIndicator } from "@/features/appointments/hooks/use-current-time-indicator";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
+import { DraggableEvent } from "@/features/appointments/components/draggable-event";
+import { DroppableCell } from "@/features/appointments/components/droppable-cell";
+import { EventItem } from "@/features/appointments/components/event-item";
+import type { CalendarEvent } from "@/features/appointments/types";
+import { isMultiDayEvent } from "@/features/appointments/utils/is-multi-day-event";
 
 import {
   EndHour,
   StartHour,
   WeekCellsHeight,
 } from "@/features/appointments/constants";
-import { DraggableEvent } from "@/features/appointments/components/draggable-event";
-import { DroppableCell } from "@/features/appointments/components/droppable-cell";
-import { EventItem } from "@/features/appointments/components/event-item";
-import { useCurrentTimeIndicator } from "@/features/appointments/hooks/use-current-time-indicator";
-import type { CalendarEvent } from "@/features/appointments/types";
-import { isMultiDayEvent } from "@/features/appointments/utils/is-multi-day-event";
+import { useTranslation } from "react-i18next";
 
 interface DayViewProps {
   currentDate: Date;
@@ -49,12 +50,26 @@ export function DayView({
   onEventSelect,
   onEventCreate,
 }: DayViewProps) {
+  const { t } = useTranslation("appointments");
+  const { locale } = useDateConfig();
+
+  // Function to translate event titles
+  const getTranslatedTitle = (title: string) => {
+    if (title === "available") {
+      return t("create.appointmentStatus.available");
+    }
+    if (title === "booked") {
+      return t("create.appointmentStatus.booked");
+    }
+    return title;
+  };
+
   const hours = useMemo(() => {
-    const dayStart = startOfDay(currentDate);
-    return eachHourOfInterval({
-      start: addHours(dayStart, StartHour),
-      end: addHours(dayStart, EndHour - 1),
-    });
+    const result = [];
+    for (let i = StartHour; i <= EndHour; i++) {
+      result.push(addHours(startOfDay(currentDate), i));
+    }
+    return result;
   }, [currentDate]);
 
   const dayEvents = useMemo(() => {
@@ -217,7 +232,7 @@ export function DayView({
                     isLastDay={isLastDay}
                   >
                     {/* Always show the title in day view for better usability */}
-                    <div>{event.title}</div>
+                    <div>{getTranslatedTitle(event.title)}</div>
                   </EventItem>
                 );
               })}
@@ -235,7 +250,7 @@ export function DayView({
             >
               {index > 0 && (
                 <span className="bg-background text-muted-foreground/70 absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
-                  {format(hour, "h a")}
+                  {format(hour, "h a", { locale })}
                 </span>
               )}
             </div>

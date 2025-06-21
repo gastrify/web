@@ -1,15 +1,19 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { GalleryVerticalEnd } from "lucide-react";
 
 import { TwoFactorForm } from "@/features/auth/components/two-factor-form";
 
-export const metadata: Metadata = {
-  title: "Gastrify | 2FA",
-  description: "2FA for your account",
-};
-
 export default function TwoFactorPage() {
+  const { t } = useTranslation("auth");
+
+  useEffect(() => {
+    document.title = `Gastrify | ${t("twoFactor.title")}`;
+  }, [t]);
+
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
       <Link

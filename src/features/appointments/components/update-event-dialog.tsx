@@ -2,10 +2,17 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, IdCardIcon, LoaderIcon, TrashIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  IdCardIcon,
+  LoaderIcon,
+  RotateCcwIcon,
+  TrashIcon,
+} from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -44,7 +51,6 @@ import { cn } from "@/shared/utils/cn";
 import { getAppointment } from "@/features/appointments/actions/get-appointment";
 import { EndHour, StartHour } from "@/features/appointments/constants";
 import { updateAppointmentSchema } from "@/features/appointments/schemas/update-appointment-schema";
-import { useAppointmentsTranslations } from "@/features/appointments/hooks/use-appointments-translations";
 import type {
   CalendarEvent,
   UpdateAppointmentValues,
@@ -52,6 +58,8 @@ import type {
 import { useUpdateAppointmentMutation } from "@/features/appointments/hooks/use-update-appointment-mutation";
 import { formatTimeForInput } from "@/features/appointments/utils/format-time-for-input";
 import { useDeleteAppointmentMutation } from "../hooks/use-delete-appointment-mutation";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 
 interface Props {
   event: CalendarEvent;
@@ -60,7 +68,8 @@ interface Props {
 }
 
 export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
-  const { update, create, booking } = useAppointmentsTranslations();
+  const { t } = useTranslation("appointments");
+  const { locale } = useDateConfig();
 
   const { data, isFetching } = useQuery({
     queryKey: ["appointments", "details", event.id],
@@ -100,12 +109,12 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
         const value = `${formattedHour}:${formattedMinute}`;
         // Use a fixed date to avoid unnecessary date object creations
         const date = new Date(2000, 0, 1, hour, minute);
-        const label = format(date, "h:mm a");
+        const label = format(date, "h:mm a", { locale });
         options.push({ value, label });
       }
     }
     return options;
-  }, []);
+  }, [locale]);
 
   const { mutate, isPending } = useUpdateAppointmentMutation({ form });
 
@@ -117,8 +126,11 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
     });
   };
 
-  const { mutate: deleteAppointment, isPending: isDeleting } =
-    useDeleteAppointmentMutation();
+  const {
+    mutate: deleteAppointment,
+    isPending: isDeleting,
+    isError: isDeleteError,
+  } = useDeleteAppointmentMutation();
 
   const onDelete = () => {
     deleteAppointment({
@@ -133,10 +145,10 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
         <Dialog modal open={isOpen} onOpenChange={(open) => !open && onClose()}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>{update.title}</DialogTitle>
+              <DialogTitle>{t("update.title")}</DialogTitle>
 
               <DialogDescription className="sr-only">
-                {update.description}
+                {t("update.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -148,7 +160,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-4">
                       <FormItem className="flex flex-1 flex-col">
-                        <FormLabel>{create.startDate}</FormLabel>
+                        <FormLabel>{t("create.startDate.label")}</FormLabel>
 
                         <Popover>
                           <PopoverTrigger
@@ -165,9 +177,11 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, "PPP", { locale })
                                 ) : (
-                                  <span>{create.pickDate}</span>
+                                  <span>
+                                    {t("create.startDate.placeholder")}
+                                  </span>
                                 )}
 
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -186,7 +200,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                       </FormItem>
 
                       <div className="flex flex-1 flex-col gap-2">
-                        <FormLabel>{create.startTime}</FormLabel>
+                        <FormLabel>{t("create.startTime.label")}</FormLabel>
 
                         <Select
                           disabled={isPending || isFetching}
@@ -207,7 +221,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                           defaultValue={formatTimeForInput(event.start)}
                         >
                           <SelectTrigger aria-invalid={fieldState.invalid}>
-                            <SelectValue placeholder={create.selectTime} />
+                            <SelectValue
+                              placeholder={t("create.startTime.placeholder")}
+                            />
                           </SelectTrigger>
 
                           <SelectContent>
@@ -236,7 +252,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-4">
                       <FormItem className="flex flex-1 flex-col">
-                        <FormLabel>{create.endDate}</FormLabel>
+                        <FormLabel>{t("create.endDate.label")}</FormLabel>
 
                         <Popover>
                           <PopoverTrigger
@@ -253,9 +269,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, "PPP", { locale })
                                 ) : (
-                                  <span>{create.pickDate}</span>
+                                  <span>{t("create.endDate.placeholder")}</span>
                                 )}
 
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -274,7 +290,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                       </FormItem>
 
                       <div className="flex flex-1 flex-col gap-2">
-                        <FormLabel>{create.endTime}</FormLabel>
+                        <FormLabel>{t("create.endTime.label")}</FormLabel>
 
                         <Select
                           disabled={isPending || isFetching}
@@ -291,7 +307,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                           defaultValue={formatTimeForInput(event.end)}
                         >
                           <SelectTrigger aria-invalid={fieldState.invalid}>
-                            <SelectValue placeholder={create.selectTime} />
+                            <SelectValue
+                              placeholder={t("create.endTime.placeholder")}
+                            />
                           </SelectTrigger>
 
                           <SelectContent>
@@ -313,55 +331,67 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col gap-4">
-                    <FormLabel>{create.status}</FormLabel>
+              {!isFetching && (
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col gap-4">
+                      <FormLabel>
+                        {t("create.appointmentStatus.label")}
+                      </FormLabel>
 
-                    <FormControl>
-                      <RadioGroup
-                        disabled={isPending || isFetching}
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex"
-                      >
-                        <FormItem className="flex items-center gap-3">
-                          <FormControl>
-                            <RadioGroupItem value="available" />
-                          </FormControl>
+                      <FormControl>
+                        <RadioGroup
+                          disabled={isPending || isFetching}
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="flex"
+                        >
+                          <FormItem className="flex items-center gap-3">
+                            <FormControl>
+                              <RadioGroupItem value="available" />
+                            </FormControl>
 
-                          <FormLabel className="font-normal">
-                            {create.available}
-                          </FormLabel>
-                        </FormItem>
+                            <FormLabel className="font-normal">
+                              {t("create.appointmentStatus.available")}
+                            </FormLabel>
+                          </FormItem>
 
-                        <FormItem className="flex items-center gap-3">
-                          <FormControl>
-                            <RadioGroupItem value="booked" />
-                          </FormControl>
+                          <FormItem className="flex items-center gap-3">
+                            <FormControl>
+                              <RadioGroupItem value="booked" />
+                            </FormControl>
 
-                          <FormLabel className="font-normal">
-                            {create.booked}
-                          </FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
+                            <FormLabel className="font-normal">
+                              {t("create.appointmentStatus.booked")}
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-              {form.watch("status") === "booked" && (
+              {isFetching && (
+                <div className="flex flex-col gap-3">
+                  <Skeleton className="h-8 w-[50%]" />
+                  <Skeleton className="h-8 w-[80%]" />
+                  <Skeleton className="h-8 w-[60%]" />
+                </div>
+              )}
+
+              {form.watch("status") === "booked" && !isFetching && (
                 <>
                   <FormField
                     control={form.control}
                     name="patientIdentificationNumber"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col gap-4">
-                        <FormLabel>{create.patientId}</FormLabel>
+                        <FormLabel>{t("create.patientId")}</FormLabel>
 
                         <div className="relative">
                           <FormControl>
@@ -371,9 +401,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                               minLength={10}
                               className="peer aria-invalid:text-destructive-foreground ps-9 shadow-none not-aria-invalid:border-none"
                               placeholder={
-                                fieldState.invalid
-                                  ? undefined
-                                  : create.patientIdPlaceholder
+                                fieldState.invalid ? undefined : "1234567890"
                               }
                               {...field}
                             />
@@ -403,13 +431,15 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                     name="type"
                     render={({ field }) => (
                       <FormItem className="flex flex-col gap-4">
-                        <FormLabel>{create.appointmentType}</FormLabel>
+                        <FormLabel>
+                          {t("create.appointmentType.label")}
+                        </FormLabel>
 
                         <FormControl>
                           <RadioGroup
                             disabled={isPending || isFetching}
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                             className="flex"
                           >
                             <FormItem className="flex items-center gap-3">
@@ -418,7 +448,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                               </FormControl>
 
                               <FormLabel className="font-normal">
-                                {booking.inPerson}
+                                {t("create.appointmentType.inPerson")}
                               </FormLabel>
                             </FormItem>
 
@@ -428,7 +458,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                               </FormControl>
 
                               <FormLabel className="font-normal">
-                                {booking.virtual}
+                                {t("create.appointmentType.virtual")}
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
@@ -443,9 +473,20 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
             </div>
 
             <DialogFooter className="flex-row sm:justify-between">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={onDelete}
+                disabled={isDeleting || isFetching}
+              >
+                {isDeleting && <LoaderIcon className="animate-spin" />}
+                {isDeleteError && <RotateCcwIcon />}
+                <TrashIcon />
+              </Button>
+
               <div className="flex flex-1 justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onClose}>
-                  {booking.cancel}
+                  {t("create.cancel")}
                 </Button>
 
                 <Button
@@ -454,24 +495,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                   disabled={isPending || isFetching}
                 >
                   {isPending && <LoaderIcon className="animate-spin" />}{" "}
-                  {update.updateAppointment}
+                  {t("create.save")}
                 </Button>
               </div>
-
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                disabled={isDeleting || isFetching}
-                onClick={onDelete}
-              >
-                {isDeleting ? (
-                  <LoaderIcon className="animate-spin" />
-                ) : (
-                  <TrashIcon size={16} />
-                )}
-                <span className="sr-only">{update.deleteAppointment}</span>
-              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
