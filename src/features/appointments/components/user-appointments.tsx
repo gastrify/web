@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { LoaderIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -11,6 +12,7 @@ import { UserAppointmentCard } from "@/features/appointments/components/user-app
 import { UserAppointmentsSkeleton } from "@/features/appointments/components/user-appointments-skeleton";
 
 export function UserAppointments() {
+  const { t } = useTranslation("appointments");
   const { data, isLoading, isError, refetch, isRefetching } =
     useUserAppointments();
 
@@ -19,14 +21,14 @@ export function UserAppointments() {
   if (isError)
     return (
       <div className="flex flex-col items-center justify-center gap-2">
-        Error fetching appointments 😢
+        {t("user.fetchError")}
         <Button
           disabled={isRefetching}
           variant="destructive"
           onClick={() => refetch()}
         >
           {isRefetching && <LoaderIcon className="animate-spin" />}
-          Refetch
+          {t("user.refetch")}
         </Button>
       </div>
     );
@@ -34,7 +36,7 @@ export function UserAppointments() {
   if (!data || data.length === 0)
     return (
       <TypographyP className="!m-0 text-center leading-normal">
-        You have no appointments yet 😢
+        {t("user.noAppointmentsYet")}
       </TypographyP>
     );
 

@@ -1,29 +1,37 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 import {
   TypographyH1,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
 
-export const metadata: Metadata = {
-  title: "Gastrify | Profile",
-};
-
-export default async function ProfilePage({}: {
+export default function ProfilePage({}: {
   params: Promise<{ identificationNumber: string }>;
 }) {
-  // const { identificationNumber } = await params;
+  const { t } = useTranslation("settingsProfile");
+
+  useEffect(() => {
+    document.title = `Gastrify | ${t("profile.title")}`;
+  }, [t]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <TypographyH1>Profile</TypographyH1>
-
-      <div className="relative mx-auto aspect-square w-full max-w-sm">
-        <Image src="/coming-soon.svg" alt="Coming soon" fill />
+    <main className="flex flex-col gap-6">
+      <div className="space-y-2">
+        <TypographyH1>{t("profile.title")}</TypographyH1>
+        <TypographyMuted>{t("profile.description")}</TypographyMuted>
       </div>
 
-      <TypographyMuted className="text-center">Coming soon...</TypographyMuted>
-    </div>
+      <div className="relative mx-auto aspect-square w-full max-w-sm">
+        <Image src="/coming-soon.svg" alt={t("comingSoon")} fill />
+      </div>
+
+      <TypographyMuted className="text-center">
+        {t("profile.comingSoon")}
+      </TypographyMuted>
+    </main>
   );
 }

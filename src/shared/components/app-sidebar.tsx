@@ -1,14 +1,15 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { NavLink } from "@/shared/components/nav-link";
 import { NavUser } from "@/shared/components/nav-user";
 import { useAppSidebar } from "@/shared/hooks/use-app-sidebar";
 import { NavUserSkeleton } from "./nav-user-skeleton";
 import { Button } from "./ui/button";
-import { LoaderIcon } from "lucide-react";
-import { RotateCcwIcon } from "lucide-react";
+import { LoaderIcon, RotateCcwIcon } from "lucide-react";
 
 export const AppSidebar = () => {
+  const { t } = useTranslation("app");
   const {
     links,
     session,
@@ -30,7 +31,7 @@ export const AppSidebar = () => {
           <NavLink
             key={link.href}
             href={link.href}
-            label={link.label}
+            label={t(`sidebar.${link.label.toLowerCase()}`)}
             icon={link.icon}
           />
         ))}

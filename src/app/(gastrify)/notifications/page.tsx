@@ -1,25 +1,35 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 import {
   TypographyH1,
   TypographyMuted,
 } from "@/shared/components/ui/typography";
 
-export const metadata: Metadata = {
-  title: "Gastrify | Notifications",
-};
-
 export default function NotificationsPage() {
+  const { t } = useTranslation("app");
+
+  useEffect(() => {
+    document.title = `Gastrify | ${t("page.notificationsTitle")}`;
+  }, [t]);
+
   return (
     <main className="flex flex-col gap-6">
-      <TypographyH1>Notifications</TypographyH1>
-
-      <div className="relative mx-auto aspect-square w-full max-w-sm">
-        <Image src="/coming-soon.svg" alt="Coming soon" fill />
+      <div className="space-y-2">
+        <TypographyH1>{t("page.notificationsTitle")}</TypographyH1>
+        <TypographyMuted>{t("page.notificationsDescription")}</TypographyMuted>
       </div>
 
-      <TypographyMuted className="text-center">Coming soon...</TypographyMuted>
+      <div className="relative mx-auto aspect-square w-full max-w-sm">
+        <Image src="/coming-soon.svg" alt={t("page.comingSoon")} fill />
+      </div>
+
+      <TypographyMuted className="text-center">
+        {t("page.comingSoon")}
+      </TypographyMuted>
     </main>
   );
 }

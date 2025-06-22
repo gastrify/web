@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
 import {
   formatDuration,
   intervalToDuration,
@@ -17,6 +20,7 @@ import {
 import { TypographyP } from "@/shared/components/ui/typography";
 
 import { useAdminIncomingAppointmentCard } from "@/features/appointments/hooks/use-admin-incoming-appointment-card";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 import type { IncomingAppointment } from "@/features/appointments/types";
 
 interface Props {
@@ -24,6 +28,8 @@ interface Props {
 }
 
 export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
+  const { t } = useTranslation("appointments");
+  const { locale } = useDateConfig();
   const {
     isDeleteAppointmentPending,
     isDeleteAppointmentError,
@@ -35,11 +41,12 @@ export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
       <CardHeader>
         <CardTitle>
           {incomingAppointment.appointment.type === "in-person"
-            ? "In-Person"
-            : "Virtual"}{" "}
+            ? t("user.inPersonAppointment")
+            : t("user.virtualAppointment")}{" "}
           (
           {formatDistanceToNow(incomingAppointment.appointment.start, {
             addSuffix: true,
+            locale,
           })}
           )
         </CardTitle>
@@ -47,41 +54,40 @@ export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
         <CardDescription className="flex items-center">
           <div className="flex flex-1 flex-col">
             <TypographyP className="!mt-2 leading-normal">
-              <span className="font-bold">Start:</span>{" "}
-              {format(incomingAppointment.appointment.start, "PPp")}
+              <span className="font-bold">{t("user.start")}:</span>{" "}
+              {format(incomingAppointment.appointment.start, "PPp", { locale })}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">End:</span>{" "}
-              {format(incomingAppointment.appointment.end, "PPp")}
+              <span className="font-bold">{t("user.end")}:</span>{" "}
+              {format(incomingAppointment.appointment.end, "PPp", { locale })}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">Duration:</span>{" "}
+              <span className="font-bold">{t("user.duration")}:</span>{" "}
               {formatDuration(
                 intervalToDuration({
                   start: incomingAppointment.appointment.start,
                   end: incomingAppointment.appointment.end,
                 }),
+                { locale },
               )}
             </TypographyP>
           </div>
 
           <div className="flex flex-1 flex-col">
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">Patient:</span>{" "}
+              <span className="font-bold">{t("incoming.patient")}:</span>{" "}
               {incomingAppointment.patient.name}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">
-                Patient&apos;s identification number:
-              </span>{" "}
+              <span className="font-bold">{t("incoming.patientId")}:</span>{" "}
               {incomingAppointment.patient.identificationNumber}
             </TypographyP>
 
             <TypographyP className="!m-0 leading-normal">
-              <span className="font-bold">Patient&apos;s email:</span>{" "}
+              <span className="font-bold">{t("incoming.patientEmail")}:</span>{" "}
               {incomingAppointment.patient.email}
             </TypographyP>
           </div>
@@ -99,7 +105,7 @@ export function AdminIncomingAppointmentCard({ incomingAppointment }: Props) {
               <LoaderIcon className="animate-spin" />
             )}
             {isDeleteAppointmentError && <RotateCcwIcon />}
-            Delete
+            {t("incoming.delete")}
           </Button>
         </CardAction>
       </CardHeader>

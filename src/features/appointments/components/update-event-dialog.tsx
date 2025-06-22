@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,6 +59,7 @@ import { useUpdateAppointmentMutation } from "@/features/appointments/hooks/use-
 import { formatTimeForInput } from "@/features/appointments/utils/format-time-for-input";
 import { useDeleteAppointmentMutation } from "../hooks/use-delete-appointment-mutation";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
 
 interface Props {
   event: CalendarEvent;
@@ -66,6 +68,9 @@ interface Props {
 }
 
 export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
+  const { t } = useTranslation("appointments");
+  const { locale } = useDateConfig();
+
   const { data, isFetching } = useQuery({
     queryKey: ["appointments", "details", event.id],
     queryFn: async () => {
@@ -104,12 +109,12 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
         const value = `${formattedHour}:${formattedMinute}`;
         // Use a fixed date to avoid unnecessary date object creations
         const date = new Date(2000, 0, 1, hour, minute);
-        const label = format(date, "h:mm a");
+        const label = format(date, "h:mm a", { locale });
         options.push({ value, label });
       }
     }
     return options;
-  }, []);
+  }, [locale]);
 
   const { mutate, isPending } = useUpdateAppointmentMutation({ form });
 
@@ -140,10 +145,10 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
         <Dialog modal open={isOpen} onOpenChange={(open) => !open && onClose()}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Update Appointment</DialogTitle>
+              <DialogTitle>{t("update.title")}</DialogTitle>
 
               <DialogDescription className="sr-only">
-                Update an appointment in your schedule
+                {t("update.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -155,7 +160,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-4">
                       <FormItem className="flex flex-1 flex-col">
-                        <FormLabel>Start Date</FormLabel>
+                        <FormLabel>{t("create.startDate.label")}</FormLabel>
 
                         <Popover>
                           <PopoverTrigger
@@ -172,9 +177,11 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, "PPP", { locale })
                                 ) : (
-                                  <span>Pick a date</span>
+                                  <span>
+                                    {t("create.startDate.placeholder")}
+                                  </span>
                                 )}
 
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -193,7 +200,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                       </FormItem>
 
                       <div className="flex flex-1 flex-col gap-2">
-                        <FormLabel>Start Time</FormLabel>
+                        <FormLabel>{t("create.startTime.label")}</FormLabel>
 
                         <Select
                           disabled={isPending || isFetching}
@@ -214,7 +221,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                           defaultValue={formatTimeForInput(event.start)}
                         >
                           <SelectTrigger aria-invalid={fieldState.invalid}>
-                            <SelectValue placeholder="Select time" />
+                            <SelectValue
+                              placeholder={t("create.startTime.placeholder")}
+                            />
                           </SelectTrigger>
 
                           <SelectContent>
@@ -243,7 +252,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-4">
                       <FormItem className="flex flex-1 flex-col">
-                        <FormLabel>End Date</FormLabel>
+                        <FormLabel>{t("create.endDate.label")}</FormLabel>
 
                         <Popover>
                           <PopoverTrigger
@@ -260,9 +269,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value, "PPP", { locale })
                                 ) : (
-                                  <span>Pick a date</span>
+                                  <span>{t("create.endDate.placeholder")}</span>
                                 )}
 
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -281,7 +290,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                       </FormItem>
 
                       <div className="flex flex-1 flex-col gap-2">
-                        <FormLabel>End Time</FormLabel>
+                        <FormLabel>{t("create.endTime.label")}</FormLabel>
 
                         <Select
                           disabled={isPending || isFetching}
@@ -298,7 +307,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                           defaultValue={formatTimeForInput(event.end)}
                         >
                           <SelectTrigger aria-invalid={fieldState.invalid}>
-                            <SelectValue placeholder="Select time" />
+                            <SelectValue
+                              placeholder={t("create.endTime.placeholder")}
+                            />
                           </SelectTrigger>
 
                           <SelectContent>
@@ -326,7 +337,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                   name="status"
                   render={({ field }) => (
                     <FormItem className="flex flex-col gap-4">
-                      <FormLabel>Appointment Status</FormLabel>
+                      <FormLabel>
+                        {t("create.appointmentStatus.label")}
+                      </FormLabel>
 
                       <FormControl>
                         <RadioGroup
@@ -341,7 +354,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                             </FormControl>
 
                             <FormLabel className="font-normal">
-                              Available
+                              {t("create.appointmentStatus.available")}
                             </FormLabel>
                           </FormItem>
 
@@ -351,7 +364,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                             </FormControl>
 
                             <FormLabel className="font-normal">
-                              Booked
+                              {t("create.appointmentStatus.booked")}
                             </FormLabel>
                           </FormItem>
                         </RadioGroup>
@@ -378,7 +391,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                     name="patientIdentificationNumber"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col gap-4">
-                        <FormLabel>Patient Identification Number</FormLabel>
+                        <FormLabel>{t("create.patientId")}</FormLabel>
 
                         <div className="relative">
                           <FormControl>
@@ -418,7 +431,9 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                     name="type"
                     render={({ field }) => (
                       <FormItem className="flex flex-col gap-4">
-                        <FormLabel>Appointment Type</FormLabel>
+                        <FormLabel>
+                          {t("create.appointmentType.label")}
+                        </FormLabel>
 
                         <FormControl>
                           <RadioGroup
@@ -433,7 +448,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                               </FormControl>
 
                               <FormLabel className="font-normal">
-                                In-Person
+                                {t("create.appointmentType.inPerson")}
                               </FormLabel>
                             </FormItem>
 
@@ -443,7 +458,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                               </FormControl>
 
                               <FormLabel className="font-normal">
-                                Virtual
+                                {t("create.appointmentType.virtual")}
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
@@ -471,7 +486,7 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
 
               <div className="flex flex-1 justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onClose}>
-                  Cancel
+                  {t("create.cancel")}
                 </Button>
 
                 <Button
@@ -479,7 +494,8 @@ export function UpdateEventDialog({ event, isOpen, onClose }: Props) {
                   form="event-dialog-form"
                   disabled={isPending || isFetching}
                 >
-                  {isPending && <LoaderIcon className="animate-spin" />} Save
+                  {isPending && <LoaderIcon className="animate-spin" />}{" "}
+                  {t("create.save")}
                 </Button>
               </div>
             </DialogFooter>

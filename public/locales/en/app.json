@@ -1,0 +1,28 @@
+{
+  "sidebar": {
+    "home": "Home",
+    "appointments": "Appointments",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "page": {
+    "homeTitle": "Home",
+    "homeDescription": "Welcome to Gastrify!",
+    "profileTitle": "Profile",
+    "profileDescription": "Your personal information and settings.",
+    "notificationsTitle": "Notifications",
+    "notificationsDescription": "Here you will see your notifications.",
+    "comingSoon": "Coming soon..."
+  },
+  "nav-user": {
+    "my-account": "My account",
+    "account-settings-description": "Your account settings and preferences.",
+    "toggle-theme": "Toggle theme",
+    "sign-out": "Sign out",
+    "online": "Online",
+    "failed-to-sign-out": "Failed to sign out. Please try again later.",
+    "gastrify-plus-description": "Unlock all features and get unlimited access to our support team.",
+    "go-to-billing": "Go to billing"
+  }
+}

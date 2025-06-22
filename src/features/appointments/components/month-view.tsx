@@ -34,6 +34,8 @@ import { getAllEventsForDay } from "@/features/appointments/utils/get-all-events
 import { getEventsForDay } from "@/features/appointments/utils/get-events-for-day";
 import { getSpanningEventsForDay } from "@/features/appointments/utils/get-spanning-events-for-day";
 import { sortEvents } from "@/features/appointments/utils/sort-events";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
+import { useGetTranslatedTitle } from "@/features/appointments/utils/get-translated-title";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -48,9 +50,12 @@ export const MonthView = memo(function MonthView({
   onEventSelect,
   onEventCreate,
 }: MonthViewProps) {
+  const { locale } = useDateConfig();
+  const getTranslatedTitle = useGetTranslatedTitle();
+
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(monthStart);
+    const monthEnd = endOfMonth(currentDate);
     const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
     const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
@@ -60,9 +65,9 @@ export const MonthView = memo(function MonthView({
   const weekdays = useMemo(() => {
     return Array.from({ length: 7 }).map((_, i) => {
       const date = addDays(startOfWeek(new Date()), i);
-      return format(date, "EEE");
+      return format(date, "EEE", { locale });
     });
-  }, []);
+  }, [locale]);
 
   const weeks = useMemo(() => {
     const result = [];
@@ -222,7 +227,7 @@ export const MonthView = memo(function MonthView({
                                 isLastDay={isLastDay}
                               >
                                 <div className="invisible" aria-hidden={true}>
-                                  {event.title}
+                                  {getTranslatedTitle(event.title)}
                                 </div>
                               </EventItem>
                             </div>
@@ -270,7 +275,7 @@ export const MonthView = memo(function MonthView({
                           >
                             <div className="space-y-2">
                               <div className="text-sm font-medium">
-                                {format(day, "EEE d")}
+                                {format(day, "EEE d", { locale })}
                               </div>
                               <div className="space-y-1">
                                 {sortEvents(allEvents).map((event) => {

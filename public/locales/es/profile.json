@@ -1,0 +1,23 @@
+{
+  "title": "Perfil",
+  "description": "Gestiona tu información de perfil y preferencias",
+  "personalInfo": {
+    "title": "Información Personal",
+    "name": "Nombre",
+    "email": "Correo Electrónico",
+    "identificationNumber": "Número de Identificación",
+    "language": "Idioma"
+  },
+  "security": {
+    "title": "Seguridad",
+    "password": "Contraseña",
+    "twoFactor": "Autenticación de Dos Factores",
+    "sessions": "Sesiones Activas"
+  },
+  "preferences": {
+    "title": "Preferencias",
+    "notifications": "Notificaciones",
+    "theme": "Tema",
+    "language": "Idioma"
+  }
+}

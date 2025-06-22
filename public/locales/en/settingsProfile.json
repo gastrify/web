@@ -1,0 +1,79 @@
+{
+  "titleSettings": "Settings",
+  "descriptionSettings": "Manage your account settings and set e-mail preferences",
+  "account": {
+    "title": "Account",
+    "description": "Update your account settings.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "youremail@example.com",
+    "emailDescription": "This is the email address we will use to contact you. It will not be publicly visible.",
+    "retry": "Retry",
+    "identification": "Identification number",
+    "identificationDescription": "This is your identification number. It will not be publicly visible.",
+    "name": "Name",
+    "nameDescription": "This is your public display name. It can be your real name or a pseudonym.",
+    "languagePreference": "Language preference",
+    "languageDescription": "Select the language you prefer to use the application in.",
+    "english": "English",
+    "spanish": "Spanish"
+  },
+  "security": {
+    "userAgent": "User Agent",
+    "current": "Current",
+    "ipAddress": "IP Address",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "expiresAt": "Expires at",
+    "revoke": "Revoke",
+    "activeSessions": "Active sessions",
+    "retry": "Retry",
+    "passwordTitle": "Change Password",
+    "newPassword": "New Password",
+    "passwordDescription": "If you change your password, all your active sessions will be logged out.",
+    "twoFactorTitle": "Two-factor Authentication",
+    "enableTwoFactor": "Enable 2FA",
+    "twoFactorDescription": "Add an extra layer of security to your account",
+    "securityTitle": "Security",
+    "securityDescription": "Update your account's security settings.",
+    "password2FA": "Password",
+    "passwordDescription2FA": "In order to enable 2FA, please enter your password.",
+    "enableButton2FA": "Enable",
+    "disableButton2FA": "Disable"
+  },
+  "notifications": {
+    "notificationTitle": "Notifications",
+    "notificationDescription": "Configure how you receive notifications.",
+    "comingSoon": "Coming Soon.....",
+    "languageUpdateSuccess": "Language updated successfully 🎉",
+    "languageUpdateError": "Failed to change language 😢",
+    "languageUpdateErrorDescription": "Please try again later"
+  },
+  "sidebar": {
+    "account": "Account",
+    "security": "Security",
+    "notifications": "Notifications"
+  },
+  "qrCode": {
+    "scanQrTitle": "Scan QR Code",
+    "manualSecretDescription": "Scan this QR code with your authenticator app or enter the secret manually.",
+    "otpLabel": "One-Time Password",
+    "otpDescription": "Enter the 6-digit code from your authenticator app.",
+    "verifyButton": "Verify"
+  },
+  "backupCodes": {
+    "backupCodesTitle": "Backup Codes",
+    "generateBackupCodes": "Generate backup codes",
+    "generateButton": "Generate",
+    "generateBackupCodesDescription": "Generate a set of backup codes to use if you lose your authenticator app. Generating new codes will invalidate the old ones.",
+    "password": "Password",
+    "passwordDescription": "Enter your current password to generate new backup codes.",
+    "downloadBackupCodesTitle": "Download Backup Codes",
+    "downloadBackupCodesDescription": "Save these codes in a safe place. Each code can be used once.",
+    "downloadBackupCodesButton": "Download Codes"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Manage your profile information",
+    "comingSoon": "Coming soon..."
+  }
+}

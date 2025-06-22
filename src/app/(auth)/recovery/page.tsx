@@ -1,15 +1,19 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { GalleryVerticalEnd } from "lucide-react";
 
 import { RecoveryForm } from "@/features/auth/components/recovery-form";
 
-export const metadata: Metadata = {
-  title: "Gastrify | Recovery",
-  description: "Use recovery code to access your account.",
-};
-
 export default function RecoveryPage() {
+  const { t } = useTranslation("auth");
+
+  useEffect(() => {
+    document.title = `Gastrify | ${t("recovery.title")}`;
+  }, [t]);
+
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
       <Link

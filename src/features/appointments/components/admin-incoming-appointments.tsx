@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { LoaderIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -9,6 +10,7 @@ import { AdminIncomingAppointmentCardSkeleton } from "@/features/appointments/co
 import { useAdminIncomingAppointments } from "@/features/appointments/hooks/use-admin-incoming-appointments";
 
 export function AdminIncomingAppointments() {
+  const { t } = useTranslation("appointments");
   const { data, isLoading, isError, refetch, isRefetching } =
     useAdminIncomingAppointments();
 
@@ -17,14 +19,14 @@ export function AdminIncomingAppointments() {
   if (isError)
     return (
       <div className="flex flex-col items-center justify-center gap-2">
-        Error fetching incoming appointments 😢
+        {t("errors.fetchIncomingError")}
         <Button
           disabled={isRefetching}
           variant="destructive"
           onClick={() => refetch()}
         >
           {isRefetching && <LoaderIcon className="animate-spin" />}
-          Refetch
+          {t("errors.refetch")}
         </Button>
       </div>
     );
@@ -32,7 +34,7 @@ export function AdminIncomingAppointments() {
   if (!data || data.length === 0)
     return (
       <div className="flex flex-col items-center justify-center gap-2">
-        No incoming appointments 😢
+        {t("incoming.noIncomingAppointments")}
       </div>
     );
 

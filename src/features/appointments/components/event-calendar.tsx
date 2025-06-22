@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { RiCalendarCheckLine } from "@remixicon/react";
 import {
   addDays,
@@ -31,6 +32,8 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { useIsAdmin } from "@/shared/hooks/is-admin";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
+import { useGetTranslatedTitle } from "@/features/appointments/utils/get-translated-title";
 
 import {
   AgendaDaysToShow,
@@ -63,6 +66,10 @@ export function EventCalendar({
   className,
   initialView = "month",
 }: EventCalendarProps) {
+  const { t } = useTranslation("appointments");
+  const { locale } = useDateConfig();
+  const getTranslatedTitle = useGetTranslatedTitle();
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>(initialView);
   const [createEventData, setCreateEventData] = useState<{
@@ -180,33 +187,38 @@ export function EventCalendar({
 
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
     // Show toast notification when an event is updated via drag and drop
-    toast.success(`Event "${updatedEvent.title}" moved`, {
-      description: format(new Date(updatedEvent.start), "MMM d, yyyy"),
-    });
+    toast.success(
+      t("errors.eventMoved", { title: getTranslatedTitle(updatedEvent.title) }),
+      {
+        description: t("errors.eventMovedDescription", {
+          date: format(new Date(updatedEvent.start), "MMM d, yyyy", { locale }),
+        }),
+      },
+    );
   };
 
   const viewTitle = useMemo(() => {
     if (view === "month") {
-      return format(currentDate, "MMMM yyyy");
+      return format(currentDate, "MMMM yyyy", { locale });
     } else if (view === "week") {
       const start = startOfWeek(currentDate, { weekStartsOn: 0 });
       const end = endOfWeek(currentDate, { weekStartsOn: 0 });
       if (isSameMonth(start, end)) {
-        return format(start, "MMMM yyyy");
+        return format(start, "MMMM yyyy", { locale });
       } else {
-        return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`;
+        return `${format(start, "MMM", { locale })} - ${format(end, "MMM yyyy", { locale })}`;
       }
     } else if (view === "day") {
       return (
         <>
           <span className="min-[480px]:hidden" aria-hidden="true">
-            {format(currentDate, "MMM d, yyyy")}
+            {format(currentDate, "MMM d, yyyy", { locale })}
           </span>
           <span className="max-[479px]:hidden min-md:hidden" aria-hidden="true">
-            {format(currentDate, "MMMM d, yyyy")}
+            {format(currentDate, "MMMM d, yyyy", { locale })}
           </span>
           <span className="max-md:hidden">
-            {format(currentDate, "EEE MMMM d, yyyy")}
+            {format(currentDate, "EEE MMMM d, yyyy", { locale })}
           </span>
         </>
       );
@@ -216,14 +228,14 @@ export function EventCalendar({
       const end = addDays(currentDate, AgendaDaysToShow - 1);
 
       if (isSameMonth(start, end)) {
-        return format(start, "MMMM yyyy");
+        return format(start, "MMMM yyyy", { locale });
       } else {
-        return `${format(start, "MMM")} - ${format(end, "MMM yyyy")}`;
+        return `${format(start, "MMM", { locale })} - ${format(end, "MMM yyyy", { locale })}`;
       }
     } else {
-      return format(currentDate, "MMMM yyyy");
+      return format(currentDate, "MMMM yyyy", { locale });
     }
-  }, [currentDate, view]);
+  }, [currentDate, view, locale]);
 
   return (
     <div
@@ -254,7 +266,7 @@ export function EventCalendar({
                 size={16}
                 aria-hidden="true"
               />
-              <span className="max-[479px]:sr-only">Today</span>
+              <span className="max-[479px]:sr-only">{t("today")}</span>
             </Button>
             <div className="flex items-center sm:gap-2">
               <Button
@@ -284,10 +296,10 @@ export function EventCalendar({
                 <Button variant="outline" className="gap-1.5 max-[479px]:h-8">
                   <span>
                     <span className="min-[480px]:hidden" aria-hidden="true">
-                      {view.charAt(0).toUpperCase()}
+                      {t(`shortcuts.${view}`)}
                     </span>
                     <span className="max-[479px]:sr-only">
-                      {view.charAt(0).toUpperCase() + view.slice(1)}
+                      {t(`calendar.${view}`)}
                     </span>
                   </span>
                   <ChevronDownIcon
@@ -299,16 +311,28 @@ export function EventCalendar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-32">
                 <DropdownMenuItem onClick={() => setView("month")}>
-                  Month <DropdownMenuShortcut>M</DropdownMenuShortcut>
+                  {t("calendar.month")}{" "}
+                  <DropdownMenuShortcut>
+                    {t("shortcuts.month")}
+                  </DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("week")}>
-                  Week <DropdownMenuShortcut>W</DropdownMenuShortcut>
+                  {t("calendar.week")}{" "}
+                  <DropdownMenuShortcut>
+                    {t("shortcuts.week")}
+                  </DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("day")}>
-                  Day <DropdownMenuShortcut>D</DropdownMenuShortcut>
+                  {t("calendar.day")}{" "}
+                  <DropdownMenuShortcut>
+                    {t("shortcuts.day")}
+                  </DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setView("agenda")}>
-                  Agenda <DropdownMenuShortcut>A</DropdownMenuShortcut>
+                  {t("calendar.agenda")}{" "}
+                  <DropdownMenuShortcut>
+                    {t("shortcuts.agenda")}
+                  </DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -342,7 +366,7 @@ export function EventCalendar({
                   size={16}
                   aria-hidden="true"
                 />
-                <span className="max-sm:sr-only">New appointment</span>
+                <span className="max-sm:sr-only">{t("newAppointment")}</span>
               </Button>
             )}
           </div>

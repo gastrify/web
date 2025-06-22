@@ -19,18 +19,20 @@ import {
 } from "date-fns";
 
 import { cn } from "@/shared/utils/cn";
+import { useCurrentTimeIndicator } from "@/features/appointments/hooks/use-current-time-indicator";
+import { useDateConfig } from "@/features/appointments/lib/date-config";
+import { DraggableEvent } from "@/features/appointments/components/draggable-event";
+import { DroppableCell } from "@/features/appointments/components/droppable-cell";
+import { EventItem } from "@/features/appointments/components/event-item";
+import type { CalendarEvent } from "@/features/appointments/types";
+import { isMultiDayEvent } from "@/features/appointments/utils/is-multi-day-event";
+import { useGetTranslatedTitle } from "@/features/appointments/utils/get-translated-title";
 
 import {
   EndHour,
   StartHour,
   WeekCellsHeight,
 } from "@/features/appointments/constants";
-import { DraggableEvent } from "@/features/appointments/components/draggable-event";
-import { DroppableCell } from "@/features/appointments/components/droppable-cell";
-import { EventItem } from "@/features/appointments/components/event-item";
-import { useCurrentTimeIndicator } from "@/features/appointments/hooks/use-current-time-indicator";
-import type { CalendarEvent } from "@/features/appointments/types";
-import { isMultiDayEvent } from "@/features/appointments/utils/is-multi-day-event";
 
 interface WeekViewProps {
   currentDate: Date;
@@ -54,6 +56,13 @@ export const WeekView = memo(function WeekView({
   onEventSelect,
   onEventCreate,
 }: WeekViewProps) {
+  const { locale } = useDateConfig();
+  const { currentTimePosition, currentTimeVisible } = useCurrentTimeIndicator(
+    currentDate,
+    "week",
+  );
+  const getTranslatedTitle = useGetTranslatedTitle();
+
   const days = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
@@ -120,10 +129,6 @@ export const WeekView = memo(function WeekView({
   );
 
   const showAllDaySection = allDayEvents.length > 0;
-  const { currentTimePosition, currentTimeVisible } = useCurrentTimeIndicator(
-    currentDate,
-    "week",
-  );
 
   return (
     <div data-slot="week-view" className="flex h-full flex-col">
@@ -138,9 +143,11 @@ export const WeekView = memo(function WeekView({
             data-today={isToday(day) || undefined}
           >
             <span className="sm:hidden" aria-hidden="true">
-              {format(day, "E")[0]} {format(day, "d")}
+              {format(day, "E", { locale })[0]} {format(day, "d")}
             </span>
-            <span className="max-sm:hidden">{format(day, "EEE dd")}</span>
+            <span className="max-sm:hidden">
+              {format(day, "EEE dd", { locale })}
+            </span>
           </div>
         ))}
       </div>
@@ -198,7 +205,7 @@ export const WeekView = memo(function WeekView({
                           )}
                           aria-hidden={!shouldShowTitle}
                         >
-                          {event.title}
+                          {getTranslatedTitle(event.title)}
                         </div>
                       </EventItem>
                     );
@@ -219,7 +226,7 @@ export const WeekView = memo(function WeekView({
             >
               {index > 0 && (
                 <span className="bg-background text-muted-foreground/70 absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end pe-2 text-[10px] sm:pe-4 sm:text-xs">
-                  {format(hour, "h a")}
+                  {format(hour, "h a", { locale })}
                 </span>
               )}
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import { TypographyH4 } from "@/shared/components/ui/typography";
@@ -10,6 +11,7 @@ import { ActiveSessionCardSkeleton } from "@/features/settings/components/active
 import { useActiveSessions } from "@/features/settings/hooks/use-active-sessions";
 
 export const ActiveSessions = () => {
+  const { t } = useTranslation("settingsProfile");
   const {
     sessions,
     isSessionsSuccess,
@@ -24,7 +26,8 @@ export const ActiveSessions = () => {
   return (
     <div className="flex flex-col gap-4">
       <TypographyH4 className="mb-4 flex items-center gap-2">
-        Active sessions {isSessionsSuccess && `(${sessions?.length})`}{" "}
+        {t("security.activeSessions")}{" "}
+        {isSessionsSuccess && `(${sessions?.length})`}{" "}
         {isSessionsFetching && (
           <LoaderIcon className="animate-spin" size={18} />
         )}
@@ -38,7 +41,7 @@ export const ActiveSessions = () => {
           type="button"
           onClick={() => refetchSessions()}
         >
-          Retry
+          {t("security.retry")}
           {isSessionsRefetching ? (
             <LoaderIcon className="animate-spin" />
           ) : (

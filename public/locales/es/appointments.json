@@ -1,0 +1,159 @@
+{
+  "page": {
+    "title": "Citas",
+    "description": "Gestiona tus citas y agenda"
+  },
+  "today": "Hoy",
+  "newAppointment": "Nueva cita",
+  "calendar": {
+    "today": "Hoy",
+    "month": "Mes",
+    "week": "Semana",
+    "day": "Día",
+    "agenda": "Agenda",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "newAppointment": "Nueva cita",
+    "allDay": "Todo el día",
+    "timezone": "Zona horaria",
+    "manageAppointments": "Gestionar Citas",
+    "appointments": "Citas",
+    "incomingAppointments": "Citas Entrantes"
+  },
+  "user": {
+    "myAppointments": "Mis Citas",
+    "bookAppointment": "Reservar una Cita",
+    "noAppointmentsYet": "Aún no tienes citas 😢",
+    "fetchError": "Error al obtener las citas 😢",
+    "refetch": "Reintentar",
+    "inPersonAppointment": "Cita Presencial",
+    "virtualAppointment": "Cita Virtual",
+    "start": "Inicio",
+    "end": "Fin",
+    "duration": "Duración",
+    "location": "Ubicación",
+    "meetingLink": "Enlace de Reunión",
+    "cancel": "Cancelar"
+  },
+  "booking": {
+    "title": "Reservar Cita",
+    "description": "Reservar una cita para esta fecha",
+    "date": "Fecha",
+    "duration": "Duración",
+    "appointmentMethod": "Método de Cita",
+    "inPerson": "Presencial",
+    "virtual": "Virtual",
+    "cancel": "Cancelar",
+    "bookAppointment": "Reservar Cita",
+    "pastAppointment": "Esta cita ya pasó"
+  },
+  "create": {
+    "title": "Crear Cita",
+    "description": "Agregar una nueva cita a tu agenda",
+    "startDate": {
+      "label": "Fecha de Inicio",
+      "placeholder": "Seleccionar fecha"
+    },
+    "endDate": {
+      "label": "Fecha de Fin",
+      "placeholder": "Seleccionar fecha"
+    },
+    "startTime": {
+      "label": "Hora de Inicio",
+      "placeholder": "Seleccionar hora"
+    },
+    "endTime": {
+      "label": "Hora de Fin",
+      "placeholder": "Seleccionar hora"
+    },
+    "patientId": "Número de Identificación del Paciente",
+    "patientIdPlaceholder": "Ingresa el número de identificación",
+    "appointmentType": {
+      "label": "Tipo de Cita",
+      "inPerson": "Presencial",
+      "virtual": "Virtual"
+    },
+    "status": "Estado",
+    "available": "Disponible",
+    "booked": "Reservado",
+    "cancelled": "Cancelado",
+    "createAppointment": "Crear Cita",
+    "appointmentStatus": {
+      "label": "Estado de la Cita",
+      "available": "Disponible",
+      "booked": "Reservado"
+    },
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  },
+  "update": {
+    "title": "Actualizar Cita",
+    "description": "Modificar los detalles de la cita",
+    "updateAppointment": "Actualizar Cita",
+    "deleteAppointment": "Eliminar Cita",
+    "deleteConfirmation": "¿Estás seguro de que quieres eliminar esta cita?",
+    "deleteWarning": "Esta acción no se puede deshacer."
+  },
+  "success": {
+    "bookedSuccessfully": "¡Cita reservada exitosamente! 🎉",
+    "bookedDescription": "Tu cita ha sido confirmada",
+    "cancelledSuccessfully": "¡Cita cancelada exitosamente! ✅",
+    "cancelledDescription": "Tu cita ha sido cancelada",
+    "createdSuccessfully": "¡Cita creada exitosamente! 🎉",
+    "updatedSuccessfully": "¡Cita actualizada exitosamente! 🎉"
+  },
+  "errors": {
+    "fetchError": "Algo salió mal al obtener las citas",
+    "fetchErrorDescription": "Por favor, inténtalo de nuevo más tarde",
+    "eventMoved": "Evento \"{{title}}\" movido",
+    "eventMovedDescription": "{{date}}",
+    "fetchIncomingError": "Error al obtener las citas entrantes 😢",
+    "refetch": "Reintentar"
+  },
+  "agenda": {
+    "noEventsFound": "No se encontraron eventos",
+    "noEventsDescription": "No hay eventos programados para este período de tiempo."
+  },
+  "incoming": {
+    "noIncomingAppointments": "No hay citas entrantes 😢",
+    "delete": "Eliminar",
+    "start": "Inicio",
+    "end": "Fin",
+    "patient": "Paciente",
+    "patientId": "Número de identificación del paciente",
+    "patientEmail": "Correo del paciente"
+  },
+  "time": {
+    "am": "AM",
+    "pm": "PM"
+  },
+  "months": {
+    "january": "Enero",
+    "february": "Febrero",
+    "march": "Marzo",
+    "april": "Abril",
+    "may": "Mayo",
+    "june": "Junio",
+    "july": "Julio",
+    "august": "Agosto",
+    "september": "Septiembre",
+    "october": "Octubre",
+    "november": "Noviembre",
+    "december": "Diciembre"
+  },
+  "weekdays": {
+    "monday": "Lunes",
+    "tuesday": "Martes",
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado",
+    "sunday": "Domingo"
+  },
+  "shortcuts": {
+    "month": "M",
+    "week": "S",
+    "day": "D",
+    "agenda": "A"
+  }
+}

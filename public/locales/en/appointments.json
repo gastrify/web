@@ -1,0 +1,159 @@
+{
+  "page": {
+    "title": "Appointments",
+    "description": "Manage your appointments and schedule"
+  },
+  "today": "Today",
+  "newAppointment": "New appointment",
+  "calendar": {
+    "today": "Today",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "agenda": "Agenda",
+    "previous": "Previous",
+    "next": "Next",
+    "newAppointment": "New appointment",
+    "allDay": "All day",
+    "timezone": "Timezone",
+    "manageAppointments": "Manage Appointments",
+    "appointments": "Appointments",
+    "incomingAppointments": "Incoming Appointments"
+  },
+  "user": {
+    "myAppointments": "My Appointments",
+    "bookAppointment": "Book an Appointment",
+    "noAppointmentsYet": "You have no appointments yet 😢",
+    "fetchError": "Error fetching appointments 😢",
+    "refetch": "Refetch",
+    "inPersonAppointment": "In-Person Appointment",
+    "virtualAppointment": "Virtual Appointment",
+    "start": "Start",
+    "end": "End",
+    "duration": "Duration",
+    "location": "Location",
+    "meetingLink": "Meeting Link",
+    "cancel": "Cancel"
+  },
+  "booking": {
+    "title": "Book Appointment",
+    "description": "Book an appointment for this date",
+    "date": "Date",
+    "duration": "Duration",
+    "appointmentMethod": "Appointment Method",
+    "inPerson": "In-person",
+    "virtual": "Virtual",
+    "cancel": "Cancel",
+    "bookAppointment": "Book Appointment",
+    "pastAppointment": "This appointment has already passed"
+  },
+  "create": {
+    "title": "Create Appointment",
+    "description": "Add a new appointment to your schedule",
+    "startDate": {
+      "label": "Start Date",
+      "placeholder": "Pick a date"
+    },
+    "endDate": {
+      "label": "End Date",
+      "placeholder": "Pick a date"
+    },
+    "startTime": {
+      "label": "Start Time",
+      "placeholder": "Select time"
+    },
+    "endTime": {
+      "label": "End Time",
+      "placeholder": "Select time"
+    },
+    "patientId": "Patient Identification Number",
+    "patientIdPlaceholder": "Enter identification number",
+    "appointmentType": {
+      "label": "Appointment Type",
+      "inPerson": "In-Person",
+      "virtual": "Virtual"
+    },
+    "status": "Status",
+    "available": "Available",
+    "booked": "Booked",
+    "cancelled": "Cancelled",
+    "createAppointment": "Create Appointment",
+    "appointmentStatus": {
+      "label": "Appointment Status",
+      "available": "Available",
+      "booked": "Booked"
+    },
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "update": {
+    "title": "Update Appointment",
+    "description": "Modify appointment details",
+    "updateAppointment": "Update Appointment",
+    "deleteAppointment": "Delete Appointment",
+    "deleteConfirmation": "Are you sure you want to delete this appointment?",
+    "deleteWarning": "This action cannot be undone."
+  },
+  "success": {
+    "bookedSuccessfully": "Appointment booked successfully! 🎉",
+    "bookedDescription": "Your appointment has been confirmed",
+    "cancelledSuccessfully": "Appointment cancelled successfully! ✅",
+    "cancelledDescription": "Your appointment has been cancelled",
+    "createdSuccessfully": "Appointment created successfully! 🎉",
+    "updatedSuccessfully": "Appointment updated successfully! 🎉"
+  },
+  "errors": {
+    "fetchError": "Something went wrong fetching appointments",
+    "fetchErrorDescription": "Please try again later",
+    "eventMoved": "Event \"{{title}}\" moved",
+    "eventMovedDescription": "{{date}}",
+    "fetchIncomingError": "Error fetching incoming appointments 😢",
+    "refetch": "Refetch"
+  },
+  "agenda": {
+    "noEventsFound": "No events found",
+    "noEventsDescription": "No events scheduled for this time period."
+  },
+  "incoming": {
+    "noIncomingAppointments": "No incoming appointments 😢",
+    "delete": "Delete",
+    "start": "Start",
+    "end": "End",
+    "patient": "Patient",
+    "patientId": "Patient identification number",
+    "patientEmail": "Patient email"
+  },
+  "time": {
+    "am": "AM",
+    "pm": "PM"
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "weekdays": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  "shortcuts": {
+    "month": "M",
+    "week": "W",
+    "day": "D",
+    "agenda": "A"
+  }
+}

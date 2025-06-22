@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckIcon, LoaderIcon, RotateCcwIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -18,6 +19,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useChangeNameForm } from "@/features/settings/hooks/use-change-name-form";
 
 export function ChangeNameForm() {
+  const { t } = useTranslation("settingsProfile");
   const {
     form,
     canSubmit,
@@ -47,7 +49,7 @@ export function ChangeNameForm() {
           render={({ field }) => (
             <FormItem>
               <div className="flex flex-wrap items-center justify-start gap-2">
-                <FormLabel>Name</FormLabel>
+                <FormLabel>{t("account.name")}</FormLabel>
 
                 {isSessionLoading && <Skeleton className="h-8 w-[200px]" />}
 
@@ -88,8 +90,7 @@ export function ChangeNameForm() {
               </div>
 
               <FormDescription className="text-muted-foreground text-sm">
-                This is your public display name. It can be your real name or a
-                pseudonym.
+                {t("account.nameDescription")}
               </FormDescription>
 
               <FormMessage />

@@ -45,7 +45,8 @@ export async function getAllAppointments(): Promise<
         session.user.role === "admin"
           ? undefined
           : gte(appointment.start, new Date()),
-      ),
+      )
+      .orderBy(appointment.start),
   );
 
   if (error) {

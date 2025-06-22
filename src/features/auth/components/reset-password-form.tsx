@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LoaderIcon, LockIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -30,6 +31,7 @@ export function ResetPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation("auth");
   const { form, onSubmit, isPending } = useResetPasswordForm();
 
   return (
@@ -37,12 +39,11 @@ export function ResetPasswordForm({
       <Card className="bg-background border-none shadow-none">
         <CardHeader className="text-center">
           <CardTitle>
-            <TypographyH1>Reset password</TypographyH1>
+            <TypographyH1>{t("resetPassword.title")}</TypographyH1>
           </CardTitle>
-
           <CardDescription>
             <TypographyP className="leading-normal">
-              Please enter your new password 🔐.
+              {t("resetPassword.description")}
             </TypographyP>
           </CardDescription>
         </CardHeader>
@@ -55,8 +56,7 @@ export function ResetPasswordForm({
                 name="password"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
-
+                    <FormLabel>{t("resetPassword.passwordLabel")}</FormLabel>
                     <div className="relative">
                       <FormControl>
                         <Input
@@ -69,7 +69,6 @@ export function ResetPasswordForm({
                           {...field}
                         />
                       </FormControl>
-
                       <div
                         className={cn(
                           "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
@@ -82,9 +81,7 @@ export function ResetPasswordForm({
                         <LockIcon size={16} aria-hidden="true" />
                       </div>
                     </div>
-
                     <FormMessage />
-
                     {fieldState.isDirty && (
                       <PasswordStrengthIndicator password={field.value} />
                     )}
@@ -97,8 +94,9 @@ export function ResetPasswordForm({
                 name="confirmPassword"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <FormLabel>Confirm password</FormLabel>
-
+                    <FormLabel>
+                      {t("resetPassword.confirmPasswordLabel")}
+                    </FormLabel>
                     <div className="relative">
                       <FormControl>
                         <Input
@@ -111,7 +109,6 @@ export function ResetPasswordForm({
                           {...field}
                         />
                       </FormControl>
-
                       <div
                         className={cn(
                           "text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50",
@@ -124,7 +121,6 @@ export function ResetPasswordForm({
                         <LockIcon size={16} aria-hidden="true" />
                       </div>
                     </div>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -132,15 +128,15 @@ export function ResetPasswordForm({
 
               <Button disabled={isPending} type="submit" className="w-full">
                 {isPending && <LoaderIcon className="animate-spin" />}
-                Reset password
+                {t("resetPassword.resetPasswordButton")}
               </Button>
             </form>
           </Form>
 
           <div className="text-center text-sm">
-            Do you remember now?{" "}
+            {t("resetPassword.doYouRemember")}{" "}
             <Link href="/sign-in" className="underline underline-offset-4">
-              Sign in
+              {t("resetPassword.signIn")}
             </Link>
           </div>
         </CardContent>

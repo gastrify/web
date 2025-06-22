@@ -9,10 +9,10 @@ export const user = pgTable("user", {
     .notNull(),
   image: text("image"),
   createdAt: timestamp("created_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .$defaultFn(() => new Date())
     .notNull(),
   updatedAt: timestamp("updated_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .$defaultFn(() => new Date())
     .notNull(),
   twoFactorEnabled: boolean("two_factor_enabled"),
   role: text("role"),
@@ -20,6 +20,7 @@ export const user = pgTable("user", {
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
   identificationNumber: text("identification_number").notNull().unique(),
+  language: text("language").notNull().default("es"),
 });
 
 export const account = pgTable("account", {

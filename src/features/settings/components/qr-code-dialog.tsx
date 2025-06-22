@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { Dispatch, SetStateAction } from "react";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { LoaderIcon, RotateCcwIcon } from "lucide-react";
@@ -45,10 +46,11 @@ interface Props {
 export const QRCodeDialog = ({
   URI,
   setTotpURI,
-  dialogTriggerRef,
   backupCodes,
   setBackupCodes,
+  dialogTriggerRef,
 }: Props) => {
+  const { t } = useTranslation("settingsProfile");
   const {
     form,
     onSubmit,
@@ -77,15 +79,14 @@ export const QRCodeDialog = ({
         <DialogHeader>
           <DialogTitle>
             {showBackupCodes
-              ? "Download backup codes"
-              : "Scan the QR in your authenticator app"}
+              ? t("qrCode.downloadBackupCodesTitle")
+              : t("qrCode.scanQrTitle")}
           </DialogTitle>
           <DialogDescription>
             {showBackupCodes
-              ? "Please download your backup codes and keep them in a safe place."
-              : "Or enter your secret key manually:"}
+              ? t("qrCode.downloadBackupCodesDescription")
+              : t("qrCode.manualSecretDescription")}
           </DialogDescription>
-
           {!showBackupCodes && (
             <CopyToClipboard
               value={key}
@@ -107,7 +108,7 @@ export const QRCodeDialog = ({
 
         {showBackupCodes ? (
           <Button onClick={handleDownloadBackupCodes} className="mx-auto">
-            Download backup codes
+            {t("qrCode.downloadBackupCodesButton")}
           </Button>
         ) : (
           <Form {...form}>
@@ -117,10 +118,9 @@ export const QRCodeDialog = ({
                 name="code"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>One-Time Password</FormLabel>
+                    <FormLabel>{t("qrCode.otpLabel")}</FormLabel>
                     <FormDescription>
-                      Please enter the one-time password from your authenticator
-                      app.
+                      {t("qrCode.otpDescription")}
                     </FormDescription>
                     <FormControl>
                       <div className="flex items-center gap-4">
@@ -139,7 +139,6 @@ export const QRCodeDialog = ({
                             <InputOTPSlot index={5} className="rounded-md" />
                           </InputOTPGroup>
                         </InputOTP>
-
                         <Button
                           variant={isError ? "destructive" : "default"}
                           disabled={isPending}
@@ -147,7 +146,7 @@ export const QRCodeDialog = ({
                         >
                           {isPending && <LoaderIcon className="animate-spin" />}
                           {isError && <RotateCcwIcon />}
-                          Verify
+                          {t("qrCode.verifyButton")}
                         </Button>
                       </div>
                     </FormControl>
