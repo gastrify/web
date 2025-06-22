@@ -33,6 +33,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { useIsAdmin } from "@/shared/hooks/is-admin";
 import { useDateConfig } from "@/features/appointments/lib/date-config";
+import { useGetTranslatedTitle } from "@/features/appointments/utils/get-translated-title";
 
 import {
   AgendaDaysToShow,
@@ -67,17 +68,7 @@ export function EventCalendar({
 }: EventCalendarProps) {
   const { t } = useTranslation("appointments");
   const { locale } = useDateConfig();
-
-  // Function to translate event titles
-  const getTranslatedTitle = (title: string) => {
-    if (title === "available") {
-      return t("create.appointmentStatus.available");
-    }
-    if (title === "booked") {
-      return t("create.appointmentStatus.booked");
-    }
-    return title;
-  };
+  const getTranslatedTitle = useGetTranslatedTitle();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>(initialView);
@@ -199,8 +190,8 @@ export function EventCalendar({
     toast.success(
       t("errors.eventMoved", { title: getTranslatedTitle(updatedEvent.title) }),
       {
-        description: format(new Date(updatedEvent.start), "MMM d, yyyy", {
-          locale,
+        description: t("errors.eventMovedDescription", {
+          date: format(new Date(updatedEvent.start), "MMM d, yyyy", { locale }),
         }),
       },
     );

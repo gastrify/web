@@ -26,13 +26,13 @@ import { DroppableCell } from "@/features/appointments/components/droppable-cell
 import { EventItem } from "@/features/appointments/components/event-item";
 import type { CalendarEvent } from "@/features/appointments/types";
 import { isMultiDayEvent } from "@/features/appointments/utils/is-multi-day-event";
+import { useGetTranslatedTitle } from "@/features/appointments/utils/get-translated-title";
 
 import {
   EndHour,
   StartHour,
   WeekCellsHeight,
 } from "@/features/appointments/constants";
-import { useTranslation } from "react-i18next";
 
 interface WeekViewProps {
   currentDate: Date;
@@ -56,22 +56,12 @@ export const WeekView = memo(function WeekView({
   onEventSelect,
   onEventCreate,
 }: WeekViewProps) {
-  const { t } = useTranslation("appointments");
   const { locale } = useDateConfig();
   const { currentTimePosition, currentTimeVisible } = useCurrentTimeIndicator(
     currentDate,
     "week",
   );
-
-  const getTranslatedTitle = (title: string) => {
-    if (title === "available") {
-      return t("create.appointmentStatus.available");
-    }
-    if (title === "booked") {
-      return t("create.appointmentStatus.booked");
-    }
-    return title;
-  };
+  const getTranslatedTitle = useGetTranslatedTitle();
 
   const days = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });

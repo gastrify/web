@@ -13,7 +13,7 @@ import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 
 import { cn } from "@/shared/utils/cn";
 import { useDateConfig } from "@/features/appointments/lib/date-config";
-import { useTranslation } from "react-i18next";
+import { useGetTranslatedTitle } from "@/features/appointments/utils/get-translated-title";
 
 import type { CalendarEvent } from "@/features/appointments/types";
 import { getBorderRadiusClasses } from "@/features/appointments/utils/get-border-radius-classes";
@@ -123,19 +123,8 @@ export const EventItem = memo(function EventItem({
   onMouseDown,
   onTouchStart,
 }: EventItemProps) {
-  const { t } = useTranslation("appointments");
   const { locale } = useDateConfig();
-
-  // Function to translate event titles
-  const getTranslatedTitle = (title: string) => {
-    if (title === "available") {
-      return t("create.appointmentStatus.available");
-    }
-    if (title === "booked") {
-      return t("create.appointmentStatus.booked");
-    }
-    return title;
-  };
+  const getTranslatedTitle = useGetTranslatedTitle();
 
   // Use the provided currentTime (for dragging) or the event's actual time
   const displayStart = useMemo(() => {

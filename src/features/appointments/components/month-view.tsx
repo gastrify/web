@@ -35,7 +35,7 @@ import { getEventsForDay } from "@/features/appointments/utils/get-events-for-da
 import { getSpanningEventsForDay } from "@/features/appointments/utils/get-spanning-events-for-day";
 import { sortEvents } from "@/features/appointments/utils/sort-events";
 import { useDateConfig } from "@/features/appointments/lib/date-config";
-import { useTranslation } from "react-i18next";
+import { useGetTranslatedTitle } from "@/features/appointments/utils/get-translated-title";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -50,19 +50,8 @@ export const MonthView = memo(function MonthView({
   onEventSelect,
   onEventCreate,
 }: MonthViewProps) {
-  const { t } = useTranslation("appointments");
   const { locale } = useDateConfig();
-
-  // Function to translate event titles
-  const getTranslatedTitle = (title: string) => {
-    if (title === "available") {
-      return t("create.appointmentStatus.available");
-    }
-    if (title === "booked") {
-      return t("create.appointmentStatus.booked");
-    }
-    return title;
-  };
+  const getTranslatedTitle = useGetTranslatedTitle();
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentDate);

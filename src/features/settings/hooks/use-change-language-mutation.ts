@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { authClient } from "@/shared/lib/better-auth/client";
 import { SESSION_QUERY_KEY } from "@/shared/lib/react-query/query-key-factory";
+import i18n from "@/shared/lib/i18n/i18n";
 import type { ChangeLanguageFormValues } from "@/features/settings/types";
 
 interface Props {
