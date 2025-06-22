@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 import {
@@ -11,6 +10,7 @@ import {
 import { SettingsSidebar } from "@/features/settings/components/settings-sidebar";
 import { PageWrapper } from "@/features/settings/components/page-wrapper";
 import { MobileWrapper } from "@/features/settings/components/mobile-wrapper";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 
 export default function SettingsLayout({
   children,
@@ -19,9 +19,7 @@ export default function SettingsLayout({
 }>) {
   const { t } = useTranslation("settingsProfile");
 
-  useEffect(() => {
-    document.title = `Gastrify | ${t("titleSettings")}`;
-  }, [t]);
+  useDocumentTitle("titleSettings");
 
   return (
     <div className="flex h-full flex-col space-y-8">
